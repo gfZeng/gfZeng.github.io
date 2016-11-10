@@ -8,6 +8,7 @@
     (def fib-seq (lazy-cat [0 1] (map + fib-seq (rest fib-seq))))
   #+end_src
 ** 无穷素数序列
+   每一轮迭代都移除一个素数的整数倍，剩下最近一个未移除的一定是素数。
    #+begin_src clojure
      (def prime-seq
        ((fn filter-prime [[x & xs]]
@@ -15,4 +16,12 @@
                 (lazy-seq
                  (filter-prime (remove #(zero? (mod % x)) xs)))))
         (drop 2 (range))))
+   #+end_src
+
+   #+begin_src java
+     public class Main {
+         public static void main(String[] args) {
+             System.out.println("Hello, World");
+         }
+     }
    #+end_src
