@@ -1,6 +1,6 @@
 #+TITLE: 如何使用 Org Mode 写文章
 #+DATE: 2016-11-10
-#+TAGS: 
+#+TAGS: Org Mode
 
 
 * 为什么要用 Org Mode
