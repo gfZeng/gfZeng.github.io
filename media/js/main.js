@@ -12,9 +12,6 @@ $(document).ready(function() {
         $.each(classes, function(idx, cls) {
             if (cls.substring(0, 4) === 'src-') {
                 var lang = cls.substring(4);
-                if (lang == "clojure") {
-                    lang = "clj";
-                }
                 self.removeClass(cls).addClass('lang-' + lang);
             }
         });
@@ -37,5 +34,5 @@ $(document).ready(function() {
     /*******************************************************************
      * pretty print all code blocks
      ******************************************************************/
-    //prettyPrint();
+    prettyPrint();
 });
