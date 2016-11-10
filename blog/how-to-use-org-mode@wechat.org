@@ -1,0 +1,20 @@
+#+TITLE: 如何使用 Org Mode 写文章
+#+DATE: 2016-11-10
+#+TAGS: 
+
+
+* 为什么要用 Org Mode
+  Org Mode 是一种类似于 Markdown 格式的标记语言，功能要比 Markdown 强大很多。
+
+  - GTD
+  - Literal Programming
+  - Agenda
+  
+* Markdown 有 Markdown Here，Org 有什么？
+  Org 有 =O->M here= --- 这是什么鬼。哈哈，Emacs 可以很方便的把 Org 格式输出为
+  Markdown 格式，写完文章，一个快捷键就 Copy 好了 Markdown， 直接粘贴到微信后台。
+  这一流程就变成了，  =Org -> Markdown -> Markdown Here= 。 好吧， 我作弊了。
+
+* Org Mode 文学编程
+  作为一个程序员，这个真是太好用了
+
