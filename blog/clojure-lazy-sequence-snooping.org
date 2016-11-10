@@ -1,0 +1,8 @@
+#+TITLE: Clojure Lazy Sequence Snooping
+#+DATE: 2016-11-10
+#+TAGS: Clojure
+
+* 定义无穷序列
+  #+begin_src clojure
+    (def fib-seq (lazy-cat [0 1] (map + fib-seq (rest fib-seq))))
+  #+end_src
