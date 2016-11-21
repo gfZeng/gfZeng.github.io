@@ -4,8 +4,8 @@
     <title>org-page</title>
     <link>http://gfzeng.github.io/</link>
     <description>static site generator</description>
-    <pubDate>Thu, 10 Nov 2016 22:37:40 HKT</pubDate>
-    <lastBuildDate>Thu, 10 Nov 2016 22:37:40 HKT</lastBuildDate>
+    <pubDate>Mon, 21 Nov 2016 14:00:52 HKT</pubDate>
+    <lastBuildDate>Mon, 21 Nov 2016 14:00:52 HKT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
@@ -28,6 +28,19 @@
 </ul>
 </div>
 </div>
+<blockquote>
+<p>
+Lazy 的好处是你不会撑死
+</p>
+</blockquote>
+
+<p>
+我是说真的，Lazy 不会吃爆内存， 用多少取多少，按需提供，这才是正确的生产方式。下面我们来见识一下 Lazy 的优势。
+</p>
+
+<p>
+先说明一下，本文所有的 Lazy 是指 Lazy Sequence
+</p>
 
 <div id="outline-container-orgheadline3" class="outline-2">
 <h2 id="orgheadline3"><span class="section-number-2">1</span> 定义无穷序列</h2>
@@ -35,6 +48,10 @@
 </div><div id="outline-container-orgheadline1" class="outline-3">
 <h3 id="orgheadline1"><span class="section-number-3">1.1</span> 无穷 Fibnoacci 序列</h3>
 <div class="outline-text-3" id="text-1-1">
+<p>
+下面我们来定义一个无穷的 Fibonacci 数列，随便你取多少个，只要你的内存允许。下述定义采取了这个规则：第 <code>N</code> 项是 <code>N-1</code> 和 <code>N-2</code> 项的和。知道第 1，2 项 <code>[0
+   1]</code> 就知道所有项了。
+</p>
 <div class="org-src-container">
 
 <pre class="src src-clojure">(def fib-seq (lazy-cat [0 1] (map + fib-seq (rest fib-seq))))
@@ -47,8 +64,20 @@
 <h3 id="orgheadline2"><span class="section-number-3">1.2</span> 无穷素数序列</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
-每一轮迭代都移除一个素数的整数倍，剩下最近一个未移除的一定是素数。
+换个规则，我们采取同样的方式定义素数，素数有这么一个规则: 假设我们找到了前
+<code>N</code> 个素数，那么第 <code>N+1</code> 个素数的寻找方法是（假设第 <code>N</code> 个素数是 x），设定
+<code>x+1</code> ，如果 <code>x+1</code> 不能整除 <code>N</code> 个素数当中的任何一个， <code>x+1</code> 就是第 <code>N+1</code> 个素数，如果能整除，那么设定 <code>x+2</code> 继续继续判断， 直到找到为止。最后，我不提供证明，其实我不会。
 </p>
+
+<p>
+利用排除法解这个问题：
+</p>
+<ol class="org-ol">
+<li>首先，列出从 2 开始的所有自然数 （2 是第一个素数）</li>
+<li>然后剔除掉所有能被 2 整除的数， 那么列表中下一个数就是 3， 也就是第 2 个素数。</li>
+<li>然后剔除掉所有能被 3 整除的数，那么列表中下一个数就是 5， 也就是第 3 个素数。</li>
+<li>&#x2026;</li>
+</ol>
 <div class="org-src-container">
 
 <pre class="src src-clojure">(def prime-seq
@@ -59,6 +88,11 @@
    (drop 2 (range))))
 </pre>
 </div>
+
+<p>
+Lazy 的好处就是，如果没有 Lazy， 上诉第 1 步 <code>所有自然数</code> 都是不可能的。有了
+Lazy，很多在我们头脑中的概念可以轻易表达了。
+</p>
 </div>
 </div>
 </div>
@@ -66,6 +100,9 @@
 <div id="outline-container-orgheadline4" class="outline-2">
 <h2 id="orgheadline4"><span class="section-number-2">2</span> 动态作用域陷阱</h2>
 <div class="outline-text-2" id="text-2">
+<p>
+说了这么多 Lazy 的好处，如果你们想用它，我觉得有必要提一下他的陷阱。我们通过上面的例子，可以看出，使用 Lazy 的前提条件你的知道持续生成的规则，这就相当于某个生产机器。如果机器内部的某个零件被更换了，那么你下次生产出来的产品有可能就不合格了。当然，这对于函数式语言来说，这生产机器就是个黑盒子，一旦造好，就不可篡改，这可以减少很多 Bug，但是仍然免不了需要引用某个外部变量，这个时候，正确性就不保证了，我们来看下面这个例子：
+</p>
 <div class="org-src-container">
 
 <pre class="src src-clojure">(def ^:dynamic *x* 3)
@@ -78,13 +115,106 @@
 ;;=&gt; (3 4 5 6 7 8 9 10 11 12)
 </pre>
 </div>
+
+<p>
+上诉程序我们期望得到的结果是 <code>(7 8 9 ...)</code> , 这是因为你设定 <code>*x*</code> 为 7 的时候，机器并没有生产，正式生产数据时， <code>*x*</code> 又变回 3 了。 有什么办法解决吗？答案是有的，在机器的类比中，我们可以复制一个 <code>*x*</code> 让其变为内部变量，这也就是所谓的闭包。
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def ^:dynamic *x* 3)
+
+(def xs
+  (binding [*x* 7]
+    (let [x *x*]
+      (map (partial + x) (range 10)))))
+
+(println xs)
+;;=&gt; (7 8 9 10 11 12 13 14 15 16)
+</pre>
+</div>
+
+<p>
+现在是我们想要的结果了。我们既然这么采取复制的方式来保证纯洁性，那么我们是否可以禁止 Clojure 的可变变量共享，这当然是可以，但是这样因小失大了。我提到过，这是陷阱，不是缺陷，如果我们这么做，那么我们就不能重用规则了（机器）。我们让机器允许自定义参数，每个使用的人自己调整一下参数就可以工作，不需要每个人都造一台机器是不是？
+</p>
 </div>
 </div>
 
 </div>
 </div>]]></description>
-      <pubDate>2016-11-10</pubDate>
+      <pubDate>2016-11-21</pubDate>
       <guid>http://gfzeng.github.io/blog/2016/11/10/clojure-lazy-sequence-snooping/</guid>
+    </item>
+    <item>
+      <title>12306 出票的一种算法设计</title>
+      <link>http://gfzeng.github.io/blog/2016/11/11/12306-出票的一种算法设计/</link>
+      <description><![CDATA[<div>
+<div class="post">
+<h1>12306 出票的一种算法设计</h1>
+<p>
+12306 一度处在风口上
+</p>
+
+</div>
+</div>]]></description>
+      <pubDate>2016-11-11</pubDate>
+      <guid>http://gfzeng.github.io/blog/2016/11/11/12306-出票的一种算法设计/</guid>
+    </item>
+    <item>
+      <title>如何使用 Org Mode 写文章</title>
+      <link>http://gfzeng.github.io/blog/2016/11/10/如何使用-org-mode-写文章/</link>
+      <description><![CDATA[<div>
+<div class="post">
+<h1>如何使用 Org Mode 写文章</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1. 为什么要用 Org Mode</a></li>
+<li><a href="#orgheadline2">2. Markdown 有 Markdown Here，Org 有什么？</a></li>
+<li><a href="#orgheadline3">3. Org Mode 文学编程</a></li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1"><span class="section-number-2">1</span> 为什么要用 Org Mode</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Org Mode 是一种类似于 Markdown 格式的标记语言，功能要比 Markdown 强大很多。
+</p>
+
+<ul class="org-ul">
+<li>GTD</li>
+<li>Literal Programming</li>
+<li>Agenda</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2"><span class="section-number-2">2</span> Markdown 有 Markdown Here，Org 有什么？</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Org 有 <code>O-&gt;M here</code> &#x2014; 这是什么鬼。哈哈，Emacs 可以很方便的把 Org 格式输出为
+Markdown 格式，写完文章，一个快捷键就 Copy 好了 Markdown， 直接粘贴到微信后台。这一流程就变成了，  <code>Org -&gt; Markdown -&gt; Markdown Here</code> 。 好吧， 我作弊了。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline3" class="outline-2">
+<h2 id="orgheadline3"><span class="section-number-2">3</span> Org Mode 文学编程</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+作为一个程序员，这个真是太好用了
+</p>
+</div>
+</div>
+
+</div>
+</div>]]></description>
+      <pubDate>2016-11-11</pubDate>
+      <guid>http://gfzeng.github.io/blog/2016/11/10/如何使用-org-mode-写文章/</guid>
     </item>
   </channel>
 </rss>
