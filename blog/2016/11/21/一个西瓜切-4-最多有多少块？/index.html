@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>一个西瓜切 4 最多有多少块？ - org-page</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="isaac" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">org-page</a></h1>
+        <p>static site generator</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/wiki/">Wiki</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/kelvinh/org-page">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="gfzeng.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>一个西瓜切 4 最多有多少块？</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1. 应该先提供答案吗？</a></li>
+<li><a href="#orgheadline2">2. 给大家打一个镇定剂</a></li>
+<li><a href="#orgheadline4">3. 西瓜切 4 刀是什么概念？</a>
+<ul>
+<li><a href="#orgheadline3">3.1. 结论</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline6">4. 什么是切割？</a>
+<ul>
+<li><a href="#orgheadline5">4.1. 定义切割</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline7">5. 总结</a></li>
+<li><a href="#orgheadline8">6. 公式</a></li>
+<li><a href="#orgheadline9">7. 答案</a></li>
+</ul>
+</div>
+</div>
+<blockquote>
+<p>
+这不是发散思维问题
+</p>
+</blockquote>
+
+<p>
+这不是发散思维问题， 所以无数块这种回答可以路过了。
+</p>
+
+<p>
+我在大二的时候，对这个问题进行了深入分析，最终得到一个通用的空间切割公式，无论多少纬空间都适用。记得当时和我的数学老师讨论这个问题后，他叫我写篇文章发表出去。不过最终没发表成功：
+</p>
+<blockquote>
+<ol class="org-ol">
+<li>我不是教授；</li>
+<li>文章太短，废话太少；</li>
+</ol>
+</blockquote>
+
+<p>
+大家如果觉得我分析的原因是开玩笑的话，试问你们在中国论文数据库里面搜索到几篇对你有帮助的论文。这年代，只要你是个教授，把已知公式的行列式展开都能重新发表。好像跑题了，好吧，咱们继续。
+</p>
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1"><span class="section-number-2">1</span> 应该先提供答案吗？</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+想了一下，还是不了，给一些喜欢思考的朋友提供思维空间，实在喜欢直接看答案的跳到文章最后去吧。
+</p>
+
+<p>
+BTW: 切 3 刀都答错的人，重新爬回妈的肚子吧。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2"><span class="section-number-2">2</span> 给大家打一个镇定剂</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+初看这个问题，貌似需要很强的空间思维能力，关于这个，你可以放心，看完这篇文章，发现这压根只需要 0 维空间想象级别。0 维？那就是不需要。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline4" class="outline-2">
+<h2 id="orgheadline4"><span class="section-number-2">3</span> 西瓜切 4 刀是什么概念？</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+西瓜，那就是一个 3 维空间，切 4 刀，相当于用 4 个平面去切割，把这 4 个平面向
+3 维空间延伸一下，会变成什么样？
+</p>
+
+<p>
+好了，先不回答这个问题，先降维讨论 1 维空间的切割问题，那就是 4 个点切一条线，
+4 个点（0 维）向 2 维空间延伸一下，会变成 4 条线切一条线。如图：
+</p>
+
+
+<div class="figure">
+<p><img src="http://oczr2280k.bkt.clouddn.com/cut-line.png" alt="cut-line.png" />
+</p>
+</div>
+
+<p>
+上面转换我们把 4 个点切直线问题，变成了 4 条线切直线问题，这是因为线与线相交得到点，最终实际起到切割作用的是点。推广来， <code>d-1</code> 空间切割 <code>d</code> 维空间也可以转换成 <code>d</code> 维切割 <code>d</code> 维空间，因为 <code>d</code> 维和 <code>d</code> 维相交得到 <code>d-1</code> 维空间，实际起到切割作用的就是这 <code>d-1</code> 维空间。
+</p>
+
+<p>
+上诉转换方式看起来既无意义，也很白痴，不过，请相信我，你想记住这个 <b>重要</b> 的转换，因为我们马上要用到了。
+</p>
+</div>
+
+<div id="outline-container-orgheadline3" class="outline-3">
+<h3 id="orgheadline3"><span class="section-number-3">3.1</span> 结论</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+<code>d-1</code> 为空间切割 <code>d</code> 维空间也可以转换成 <code>d</code> 维切割 <code>d</code> 维空间。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline6" class="outline-2">
+<h2 id="orgheadline6"><span class="section-number-2">4</span> 什么是切割？</h2>
+<div class="outline-text-2" id="text-4">
+</div><div id="outline-container-orgheadline5" class="outline-3">
+<h3 id="orgheadline5"><span class="section-number-3">4.1</span> 定义切割</h3>
+<div class="outline-text-3" id="text-4-1">
+<blockquote>
+<p>
+切割是从一个区域的边界进入，从另外一个边界出去。
+</p>
+</blockquote>
+
+<p>
+以线切割一个矩形例子， 从一条边进入，从另外一条边出去， 这样就把矩形分成了 2
+半，我们假设这次是横着穿过矩形的，用的直线 A。现在在竖着用直线 B 切割一次如何，我们将矩形分成了 4 块。第一次切割得到 2 块， 第二次切割得到 4 块，相比第一次多了 2 块，这 2 块从哪里来的？这 2 块来自于第二条直线 B 切割了两个区域 &#x2014; 白色和灰色区域，B 直线从上到下两次出入边界，而 A 是一条特殊边界，黑色和白色共享的，B 与其相交既是从边界 A 离开白色区域，也是从边界 A 进入灰色区域。我们暂且称
+A 这类边界为切割边界。很明显，当我们完成 B 的切割，B 本身也就成了切割边界。
+</p>
+
+
+<div class="figure">
+<p><img src="http://oczr2280k.bkt.clouddn.com/cut-square.png" alt="cut-square.png" />
+</p>
+</div>
+
+<p>
+下面我们依次用 B，C，D 直线来切割矩形：
+</p>
+
+<ol class="org-ol">
+<li>根据切割定义，B 切割了几个区域，取决于 B 与切割边界 A 相交了多少次，反过来</li>
+</ol>
+<p>
+说，切割边界 A 可以把 B 分成几个区域？ 这等价于用 1 个点切割直线 B，可以分成几个区域，答案是 2 个。得到总区域数：=2 + 2 = 4=
+</p>
+
+<ol class="org-ol">
+<li>现在用第 3 条直线 C 来切割矩形，C 能切割几个区域了？用 2 个点分隔直线 C</li>
+</ol>
+<p>
+(A, B 2 个切割边界去切 C)， 得到答案是 3。总分隔的区域数是： <code>4 + 3 = 7</code>
+</p>
+
+<ol class="org-ol">
+<li>用第 4 条直线切割，我不分析了，总区域数是：=7 + 4 = 11=</li>
+
+<li>&#x2026;</li>
+</ol>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline7" class="outline-2">
+<h2 id="orgheadline7"><span class="section-number-2">5</span> 总结</h2>
+<div class="outline-text-2" id="text-5">
+<ol class="org-ol">
+<li><p>
+n 条直线切割平面，最多可以切割成几个区域？
+</p>
+<blockquote>
+<p>
+n - 1 条直线切割完成时，得到 y(n-1) 个区域，同时具有 n - 1 个切割边界，
+n - 1 个点可以把第 n 条直线切成 n 块，所以有：
+</p>
+
+<p>
+y(n) = y(n-1) + n, 其中 y(0) = 1
+</p>
+
+<p>
+y(0) 代表没有切割， 那就是一整个平面区域。
+</p>
+</blockquote></li>
+
+<li><p>
+d 维空间切割 n 次， 最多可以切割成几个区域？
+</p>
+<blockquote>
+<p>
+设分隔的区域数为二元函数：y(d, n), 那么 n - 1 次完成后，得到 y(d, n-1) 个区域，同时具有 n - 1 个切割边界, 第 n 次用空间 D (d-1 维空间) 切割时，能切割区域数等价于 D 空间切割 n - 1 次的区域数 y(d-1, n-1), 那么可以得:
+</p>
+
+<p>
+y(d, n) = y(d, n-1) + y(d-1, n-1)
+</p>
+
+<p>
+其中对于任何 n 有 y(0, n) = 1（点无论切割几次，只有一个点）对于任何 d 有 y(d, 0) = 1（无论几维空间， 切割 0 次都是空间自己本身）
+</p>
+</blockquote></li>
+
+<li><p>
+看图说话
+</p>
+
+
+<div class="figure">
+<p><img src="http://oczr2280k.bkt.clouddn.com/cut-watermelon.png" alt="cut-watermelon.png" />
+</p>
+</div>
+
+<p>
+观察 L 形的蓝色区域，你会发现，表格中的任何一处都有这个规则，？六个读者填了，其中紫色的？号就是文章标题的答案。
+</p></li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orgheadline8" class="outline-2">
+<h2 id="orgheadline8"><span class="section-number-2">6</span> 公式</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+不提供公式证明了，d 维空间切割 n 次做多分割数维为：
+</p>
+
+<p>
+y(d, n) = C(n, d) + C(n, d - 1) + &#x2026; + C(n, 0)
+</p>
+
+<p>
+其中 C(p, q) 代表组合数, 从 p 中取 q 个的组合数。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline9" class="outline-2">
+<h2 id="orgheadline9"><span class="section-number-2">7</span> 答案</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+标题答案是 15 
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2016-11-21</span>
+        <span title="last modification date" class="post-info">2016-11-22</span>
+        <span title="tags" class="post-info"><a href="/tags/math/">Math</a></span>
+        <span title="author" class="post-info">isaac</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2016/11/21/一个西瓜切-4-最多有多少块？/";
+          var disqus_url = "http://gfzeng.github.io/blog/2016/11/21/一个西瓜切-4-最多有多少块？/";
+          var disqus_shortname = 'isaac-zeng';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script> -->
+      <script src="/media/js/main.js"></script>
+      <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?lang=clj&skin=desert"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x (<a href="http://orgmode.org">Org mode</a> 8.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:isaac &lt;at&gt; Isaacs-Mac-Pro-7 &lt;dot&gt; local">isaac</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
