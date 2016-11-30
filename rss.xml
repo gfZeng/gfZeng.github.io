@@ -4,10 +4,90 @@
     <title>org-page</title>
     <link>http://gfzeng.github.io/</link>
     <description>static site generator</description>
-    <pubDate>Fri, 25 Nov 2016 14:13:01 HKT</pubDate>
-    <lastBuildDate>Fri, 25 Nov 2016 14:13:01 HKT</lastBuildDate>
+    <pubDate>Wed, 30 Nov 2016 14:25:19 HKT</pubDate>
+    <lastBuildDate>Wed, 30 Nov 2016 14:25:19 HKT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
+    <item>
+      <title>SQL 进化史</title>
+      <link>http://gfzeng.github.io/blog/2016/11/25/sql-进化史/</link>
+      <description><![CDATA[<div>
+<div class="post">
+<h1>SQL 进化史</h1>
+<blockquote>
+<p>
+SQL 与 NoSQL 的恩怨史，说这个话题要被骂的。
+</p>
+</blockquote>
+
+
+<p>
+大数据的兴起，加快了数据库技术的发展。先来看看 SQL 的进化史：
+</p>
+<ol class="org-ol">
+<li>We have no SQL</li>
+<li>SQL</li>
+<li>NoSQL</li>
+<li>Not Only SQL</li>
+<li>No, SQL</li>
+</ol>
+
+<p>
+好吧，这其实是个笑话，但很遗憾，NoSQL 的狂热分子们，这其实不是个笑话。虽然 NoSQL 绕一圈，回到 SQL， 但是对 SQL 的推动是巨大的，数据库的功能越来越丰富，稳定性原来越强大，分布式支持越来越好。
+</p>
+
+<p>
+其实没有完全回到原点，NoSQL 最终的定位是第 4 阶段 &#x2014;&#x2014; Not Only SQL，但是在 NoSQL 的推动下，SQL 也最终成了 Not Only SQL。 所以二者的界限是越来越模糊了，几乎无法区分，最常用的区分方式是，支持分布式的是 NoSQL，不支持的是 SQL。 但其实是不是 NoSQL，跟分布式根本就没有关系，只是该数据库的实现支持了分布式而已，NoSQL 在一开始就支持了分布式，为了便于推广，把分布式绑在自己身上而已。
+</p>
+
+<p>
+说了一大摊子，说来说去，SQL，NoSQL 其实都是一个样，包装不同而已，想学习数据库知识的，还是看传统的，关于 SQL 的书籍好，比如 PostgreSQL。市面上的 NoSQL 一般不会讲很基础的东西，因为这并不是他的卖点。不说了，看书去了，为下次吹牛做准备。
+</p>
+
+</div>
+</div>]]></description>
+      <pubDate>2016-11-30</pubDate>
+      <guid>http://gfzeng.github.io/blog/2016/11/25/sql-进化史/</guid>
+    </item>
+    <item>
+      <title>Mac 输入法切换 Bug</title>
+      <link>http://gfzeng.github.io/blog/2016/11/30/mac-输入法切换-bug/</link>
+      <description><![CDATA[<div>
+<div class="post">
+<h1>Mac 输入法切换 Bug</h1>
+<blockquote>
+<p>
+如果你和我一样被 Mac 的这个问题困扰很久，那么你很幸运。
+</p>
+</blockquote>
+
+<p>
+问题是这样的，状态栏显示的你已经切换到「中文」状态了，但是输入的还是英文，切回「英文」状态，输入的仍然是英文，总之你就不能成功切换成「中文」输入法。而有时，这个问题是反过来的，无论你怎么切换都只能输入中文。
+</p>
+
+<p>
+自从 Cook 大爷上台后，Mac 系统越来越不稳定， 不少同事朋友都吐槽。最近我遇到这个输入法不能准确切换的问题，出现的概率极其低，我使用的两台 Mac，一台有这个问题，一台没有。问同事，他们使用都正常，问 Google，根本没有类似情况。无赖之下只得勉强使用，输入法切换不成功就多切几次。
+</p>
+
+<p>
+这一忍，1 个月过去了，是在受不了了，所谓「忍无可忍，无需再忍」。使用 Windows 去，当然不是，哥是这么没追求的人吗？我决定把所有跟输入法相关的程序都干掉，挨个重启试试，最后终于找到罪魁祸首。下面我来教你怎么解决这个问题：
+</p>
+
+<ol class="org-ol">
+<li>打开 <code>Activity Monitor</code></li>
+<li>找到 <code>TISwitcher</code> 这个进程，干掉就 OK 了</li>
+<li>为了防止重启后，这个进程再次启动， 直接删掉 <code>/System/Library/CoreServices/Menu Extras/TextInput.menu/Contents/SharedSupport/TISwitcher.app</code></li>
+</ol>
+
+<p>
+比较简单，不图示了。 <code>TISwitcher</code> 这个进程干啥用的，按住 <code>control</code> 键，不停的敲 <code>空格</code> 就可了看到这个进程的面貌了，对于使用 <code>command + space</code> 切换输入法的， <code>control</code> 换成 <code>command</code> 即可。 <code>TISwitcher</code> 干掉没有任何影响，反正你切换一次输入法是看不到他面貌的，而且多数情况，你只需要来回切换，一次切换动作就够。
+</p>
+
+</div>
+</div>]]></description>
+      <pubDate>2016-11-30</pubDate>
+      <guid>http://gfzeng.github.io/blog/2016/11/30/mac-输入法切换-bug/</guid>
+    </item>
     <item>
       <title>Clojure Lazy Sequence Snooping</title>
       <link>http://gfzeng.github.io/blog/2016/11/10/clojure-lazy-sequence-snooping/</link>
