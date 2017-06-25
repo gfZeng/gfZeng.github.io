@@ -4,8 +4,8 @@
     <title>没事瞎思考</title>
     <link>http://gfzeng.github.io/</link>
     <description>没事瞎思考</description>
-    <pubDate>Sun, 25 Jun 2017 23:16:04 HKT</pubDate>
-    <lastBuildDate>Sun, 25 Jun 2017 23:16:04 HKT</lastBuildDate>
+    <pubDate>Sun, 25 Jun 2017 23:17:04 HKT</pubDate>
+    <lastBuildDate>Sun, 25 Jun 2017 23:17:04 HKT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
@@ -18,15 +18,15 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgfca6b53">1. 几个小结论</a></li>
-<li><a href="#orgf52d6df">2. 模拟卖票</a>
+<li><a href="#org26eb2b7">1. 几个小结论</a></li>
+<li><a href="#org40fa1e3">2. 模拟卖票</a>
 <ul>
-<li><a href="#org614b22d">2.1. 出票规则</a></li>
-<li><a href="#org2fbb225">2.2. 判断座位在某站点区间是否可用</a></li>
+<li><a href="#orgaa432dc">2.1. 出票规则</a></li>
+<li><a href="#orgd79e991">2.2. 判断座位在某站点区间是否可用</a></li>
 </ul>
 </li>
-<li><a href="#orgbee76a6">3. 出票算法</a></li>
-<li><a href="#org9d3fe1b">4. 总结</a></li>
+<li><a href="#org73e5a28">3. 出票算法</a></li>
+<li><a href="#org39a911e">4. 总结</a></li>
 </ul>
 </div>
 </div>
@@ -50,8 +50,8 @@
 上述例子实际是基于一个规则，就是不能要求乘客中途换座位，假如可以的话，我明显可以让乘客 AB 和 CD 的时候坐 6 号座位，BC 坐其他座位了，那么 6 号座位全程是满的，这对于列车来说倒是再好不过了。
 </p>
 
-<div id="outline-container-orgfca6b53" class="outline-2">
-<h2 id="orgfca6b53"><span class="section-number-2">1</span> 几个小结论</h2>
+<div id="outline-container-org26eb2b7" class="outline-2">
+<h2 id="org26eb2b7"><span class="section-number-2">1</span> 几个小结论</h2>
 <div class="outline-text-2" id="text-1">
 <ol class="org-ol">
 <li>票的最小单位是 1 站 × 1 座位</li>
@@ -62,8 +62,8 @@
 </div>
 </div>
 
-<div id="outline-container-orgf52d6df" class="outline-2">
-<h2 id="orgf52d6df"><span class="section-number-2">2</span> 模拟卖票</h2>
+<div id="outline-container-org40fa1e3" class="outline-2">
+<h2 id="org40fa1e3"><span class="section-number-2">2</span> 模拟卖票</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 <a href="http://oczr2280k.bkt.clouddn.com/12306-sell-ticket.png">12306 sell ticket</a>
@@ -71,8 +71,8 @@
 </p>
 </div>
 
-<div id="outline-container-org614b22d" class="outline-3">
-<h3 id="org614b22d"><span class="section-number-3">2.1</span> 出票规则</h3>
+<div id="outline-container-orgaa432dc" class="outline-3">
+<h3 id="orgaa432dc"><span class="section-number-3">2.1</span> 出票规则</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 基于上述例子，我们来设计一个合理的出票规则：确定票的站区间，从上至下找到一个不和其他票冲突的座位（也就是图形中的色块不重叠）。
@@ -93,8 +93,8 @@
 </div>
 </div>
 
-<div id="outline-container-org2fbb225" class="outline-3">
-<h3 id="org2fbb225"><span class="section-number-3">2.2</span> 判断座位在某站点区间是否可用</h3>
+<div id="outline-container-orgd79e991" class="outline-3">
+<h3 id="orgd79e991"><span class="section-number-3">2.2</span> 判断座位在某站点区间是否可用</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 拿丙来说，丙买了 de 2 个站点的票，根据我们内存图模型，他买了一张这样的票
@@ -123,8 +123,8 @@ t-site &amp; t-seat = t-site
 </div>
 </div>
 
-<div id="outline-container-orgbee76a6" class="outline-2">
-<h2 id="orgbee76a6"><span class="section-number-2">3</span> 出票算法</h2>
+<div id="outline-container-org73e5a28" class="outline-2">
+<h2 id="org73e5a28"><span class="section-number-2">3</span> 出票算法</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 现在我们来确定一下出票步骤：
@@ -141,8 +141,8 @@ t-site &amp; t-seat = t-site
 </div>
 </div>
 
-<div id="outline-container-org9d3fe1b" class="outline-2">
-<h2 id="org9d3fe1b"><span class="section-number-2">4</span> 总结</h2>
+<div id="outline-container-org39a911e" class="outline-2">
+<h2 id="org39a911e"><span class="section-number-2">4</span> 总结</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 我相信，采用这种出票算法，对于<a href="http://www.csdn.net/article/2015-02-10/2823900"> 12306 尖峰日 PV 值 297 亿下可每秒出票 1032 张</a>, 不采用内存计算进行优化，直接采用 PostgreSQL 就可以搞定了，每辆列车一个 table 保存所有座位的 ticket value， 不过 😝 ， 当然只是指出票而已，车票系统还有很多其他问题需要考虑。不过貌似看这文章，12306 的票是预先分配好的，然后每 2 分钟更新一次。
@@ -169,21 +169,21 @@ t-site &amp; t-seat = t-site
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org513823e">1. 应该先提供答案吗？</a></li>
-<li><a href="#orge093511">2. 给大家打一个镇定剂</a></li>
-<li><a href="#org3378184">3. 西瓜切 4 刀是什么概念？</a>
+<li><a href="#orga2ff0c3">1. 应该先提供答案吗？</a></li>
+<li><a href="#org7b8f1fe">2. 给大家打一个镇定剂</a></li>
+<li><a href="#org0ff6e7b">3. 西瓜切 4 刀是什么概念？</a>
 <ul>
-<li><a href="#orgccc2672">3.1. 结论</a></li>
+<li><a href="#org19bb142">3.1. 结论</a></li>
 </ul>
 </li>
-<li><a href="#org9014f6e">4. 什么是切割？</a>
+<li><a href="#org789da26">4. 什么是切割？</a>
 <ul>
-<li><a href="#orga2b8f91">4.1. 定义切割</a></li>
+<li><a href="#org84b5f41">4.1. 定义切割</a></li>
 </ul>
 </li>
-<li><a href="#org71ebcbd">5. 总结</a></li>
-<li><a href="#orga8f91cc">6. 公式</a></li>
-<li><a href="#org434029a">7. 答案</a></li>
+<li><a href="#orga45ea42">5. 总结</a></li>
+<li><a href="#org98e6c55">6. 公式</a></li>
+<li><a href="#orgacd37bb">7. 答案</a></li>
 </ul>
 </div>
 </div>
@@ -211,8 +211,8 @@ t-site &amp; t-seat = t-site
 大家如果觉得我分析的原因是开玩笑的话，试问你们在中国论文数据库里面搜索到几篇对你有帮助的论文。这年代，只要你是个教授，把已知公式的行列式展开都能重新发表。好像跑题了，好吧，咱们继续。
 </p>
 
-<div id="outline-container-org513823e" class="outline-2">
-<h2 id="org513823e"><span class="section-number-2">1</span> 应该先提供答案吗？</h2>
+<div id="outline-container-orga2ff0c3" class="outline-2">
+<h2 id="orga2ff0c3"><span class="section-number-2">1</span> 应该先提供答案吗？</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 想了一下，还是不了，给一些喜欢思考的朋友提供思维空间，实在喜欢直接看答案的跳到文章最后去吧。
@@ -224,8 +224,8 @@ BTW: 切 3 刀都答错的人，重新爬回妈的肚子吧。
 </div>
 </div>
 
-<div id="outline-container-orge093511" class="outline-2">
-<h2 id="orge093511"><span class="section-number-2">2</span> 给大家打一个镇定剂</h2>
+<div id="outline-container-org7b8f1fe" class="outline-2">
+<h2 id="org7b8f1fe"><span class="section-number-2">2</span> 给大家打一个镇定剂</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 初看这个问题，貌似需要很强的空间思维能力，关于这个，你可以放心，看完这篇文章，发现这压根只需要 0 维空间想象级别。0 维？那就是不需要。
@@ -233,8 +233,8 @@ BTW: 切 3 刀都答错的人，重新爬回妈的肚子吧。
 </div>
 </div>
 
-<div id="outline-container-org3378184" class="outline-2">
-<h2 id="org3378184"><span class="section-number-2">3</span> 西瓜切 4 刀是什么概念？</h2>
+<div id="outline-container-org0ff6e7b" class="outline-2">
+<h2 id="org0ff6e7b"><span class="section-number-2">3</span> 西瓜切 4 刀是什么概念？</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 西瓜，那就是一个 3 维空间，切 4 刀，相当于用 4 个平面去切割，把这 4 个平面向 3 维空间延伸一下，会变成什么样？
@@ -259,8 +259,8 @@ BTW: 切 3 刀都答错的人，重新爬回妈的肚子吧。
 </p>
 </div>
 
-<div id="outline-container-orgccc2672" class="outline-3">
-<h3 id="orgccc2672"><span class="section-number-3">3.1</span> 结论</h3>
+<div id="outline-container-org19bb142" class="outline-3">
+<h3 id="org19bb142"><span class="section-number-3">3.1</span> 结论</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 <code>d-1</code> 为空间切割 <code>d</code> 维空间也可以转换成 <code>d</code> 维切割 <code>d</code> 维空间。
@@ -269,11 +269,11 @@ BTW: 切 3 刀都答错的人，重新爬回妈的肚子吧。
 </div>
 </div>
 
-<div id="outline-container-org9014f6e" class="outline-2">
-<h2 id="org9014f6e"><span class="section-number-2">4</span> 什么是切割？</h2>
+<div id="outline-container-org789da26" class="outline-2">
+<h2 id="org789da26"><span class="section-number-2">4</span> 什么是切割？</h2>
 <div class="outline-text-2" id="text-4">
-</div><div id="outline-container-orga2b8f91" class="outline-3">
-<h3 id="orga2b8f91"><span class="section-number-3">4.1</span> 定义切割</h3>
+</div><div id="outline-container-org84b5f41" class="outline-3">
+<h3 id="org84b5f41"><span class="section-number-3">4.1</span> 定义切割</h3>
 <div class="outline-text-3" id="text-4-1">
 <blockquote>
 <p>
@@ -308,8 +308,8 @@ BTW: 切 3 刀都答错的人，重新爬回妈的肚子吧。
 </div>
 </div>
 
-<div id="outline-container-org71ebcbd" class="outline-2">
-<h2 id="org71ebcbd"><span class="section-number-2">5</span> 总结</h2>
+<div id="outline-container-orga45ea42" class="outline-2">
+<h2 id="orga45ea42"><span class="section-number-2">5</span> 总结</h2>
 <div class="outline-text-2" id="text-5">
 <ol class="org-ol">
 <li><p>
@@ -364,8 +364,8 @@ y(d, n) = y(d, n-1) + y(d-1, n-1)
 </div>
 </div>
 
-<div id="outline-container-orga8f91cc" class="outline-2">
-<h2 id="orga8f91cc"><span class="section-number-2">6</span> 公式</h2>
+<div id="outline-container-org98e6c55" class="outline-2">
+<h2 id="org98e6c55"><span class="section-number-2">6</span> 公式</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 不提供公式证明了，d 维空间切割 n 次做多分割数维为：
@@ -381,8 +381,8 @@ y(d, n) = C(n, d) + C(n, d - 1) + &#x2026; + C(n, 0)
 </div>
 </div>
 
-<div id="outline-container-org434029a" class="outline-2">
-<h2 id="org434029a"><span class="section-number-2">7</span> 答案</h2>
+<div id="outline-container-orgacd37bb" class="outline-2">
+<h2 id="orgacd37bb"><span class="section-number-2">7</span> 答案</h2>
 <div class="outline-text-2" id="text-7">
 <p>
 标题答案是 15 
@@ -485,13 +485,13 @@ SQL 与 NoSQL 的恩怨史，说这个话题要被骂的。
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgdd72338">1. 定义无穷序列</a>
+<li><a href="#org14fb079">1. 定义无穷序列</a>
 <ul>
-<li><a href="#org9945d2f">1.1. 无穷 Fibnoacci 序列</a></li>
-<li><a href="#orgb9f30fe">1.2. 无穷素数序列</a></li>
+<li><a href="#orgcf7e37c">1.1. 无穷 Fibnoacci 序列</a></li>
+<li><a href="#orgfcfacc3">1.2. 无穷素数序列</a></li>
 </ul>
 </li>
-<li><a href="#org3940442">2. 动态作用域陷阱</a></li>
+<li><a href="#orgfb6e8f5">2. 动态作用域陷阱</a></li>
 </ul>
 </div>
 </div>
@@ -509,11 +509,11 @@ Lazy 的好处是你不会撑死
 先说明一下，本文所有的 Lazy 是指 Lazy Sequence
 </p>
 
-<div id="outline-container-orgdd72338" class="outline-2">
-<h2 id="orgdd72338"><span class="section-number-2">1</span> 定义无穷序列</h2>
+<div id="outline-container-org14fb079" class="outline-2">
+<h2 id="org14fb079"><span class="section-number-2">1</span> 定义无穷序列</h2>
 <div class="outline-text-2" id="text-1">
-</div><div id="outline-container-org9945d2f" class="outline-3">
-<h3 id="org9945d2f"><span class="section-number-3">1.1</span> 无穷 Fibnoacci 序列</h3>
+</div><div id="outline-container-orgcf7e37c" class="outline-3">
+<h3 id="orgcf7e37c"><span class="section-number-3">1.1</span> 无穷 Fibnoacci 序列</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 下面我们来定义一个无穷的 Fibonacci 数列，随便你取多少个，只要你的内存允许。下述定义采取了这个规则：第 <code>N</code> 项是 <code>N-1</code> 和 <code>N-2</code> 项的和。知道第 1，2 项 <code>[0 1]</code> 就知道所有项了。
@@ -525,8 +525,8 @@ Lazy 的好处是你不会撑死
 </div>
 </div>
 
-<div id="outline-container-orgb9f30fe" class="outline-3">
-<h3 id="orgb9f30fe"><span class="section-number-3">1.2</span> 无穷素数序列</h3>
+<div id="outline-container-orgfcfacc3" class="outline-3">
+<h3 id="orgfcfacc3"><span class="section-number-3">1.2</span> 无穷素数序列</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 换个规则，我们采取同样的方式定义素数，素数有这么一个规则: 假设我们找到了前 <code>N</code> 个素数，那么第 <code>N+1</code> 个素数的寻找方法是（假设第 <code>N</code> 个素数是 x），设定 <code>x+1</code> ，如果 <code>x+1</code> 不能整除 <code>N</code> 个素数当中的任何一个， <code>x+1</code> 就是第 <code>N+1</code> 个素数，如果能整除，那么设定 <code>x+2</code> 继续继续判断， 直到找到为止。最后，我不提供证明，其实我不会。
@@ -558,8 +558,8 @@ Lazy 的好处就是，如果没有 Lazy， 上诉第 1 步 <code>所有自然�
 </div>
 </div>
 
-<div id="outline-container-org3940442" class="outline-2">
-<h2 id="org3940442"><span class="section-number-2">2</span> 动态作用域陷阱</h2>
+<div id="outline-container-orgfb6e8f5" class="outline-2">
+<h2 id="orgfb6e8f5"><span class="section-number-2">2</span> 动态作用域陷阱</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 说了这么多 Lazy 的好处，如果你们想用它，我觉得有必要提一下他的陷阱。我们通过上面的例子，可以看出，使用 Lazy 的前提条件你的知道持续生成的规则，这就相当于某个生产机器。如果机器内部的某个零件被更换了，那么你下次生产出来的产品有可能就不合格了。当然，这对于函数式语言来说，这生产机器就是个黑盒子，一旦造好，就不可篡改，这可以减少很多 Bug，但是仍然免不了需要引用某个外部变量，这个时候，正确性就不保证了，我们来看下面这个例子：
@@ -613,16 +613,16 @@ Lazy 的好处就是，如果没有 Lazy， 上诉第 1 步 <code>所有自然�
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orge634d4a">1. 为什么要用 Org Mode</a></li>
-<li><a href="#org3c7f820">2. Markdown 有 Markdown Here，Org 有什么？</a></li>
-<li><a href="#org58d60aa">3. Org Mode 文学编程</a></li>
+<li><a href="#org3c1ff9c">1. 为什么要用 Org Mode</a></li>
+<li><a href="#orgffa262a">2. Markdown 有 Markdown Here，Org 有什么？</a></li>
+<li><a href="#orgd77529e">3. Org Mode 文学编程</a></li>
 </ul>
 </div>
 </div>
 
 
-<div id="outline-container-orge634d4a" class="outline-2">
-<h2 id="orge634d4a"><span class="section-number-2">1</span> 为什么要用 Org Mode</h2>
+<div id="outline-container-org3c1ff9c" class="outline-2">
+<h2 id="org3c1ff9c"><span class="section-number-2">1</span> 为什么要用 Org Mode</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Org Mode 是一种类似于 Markdown 格式的标记语言，功能要比 Markdown 强大很多。
@@ -636,8 +636,8 @@ Org Mode 是一种类似于 Markdown 格式的标记语言，功能要比 Markdo
 </div>
 </div>
 
-<div id="outline-container-org3c7f820" class="outline-2">
-<h2 id="org3c7f820"><span class="section-number-2">2</span> Markdown 有 Markdown Here，Org 有什么？</h2>
+<div id="outline-container-orgffa262a" class="outline-2">
+<h2 id="orgffa262a"><span class="section-number-2">2</span> Markdown 有 Markdown Here，Org 有什么？</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Org 有 <code>O-&gt;M here</code> &#x2014; 这是什么鬼。哈哈，Emacs 可以很方便的把 Org 格式输出为 Markdown 格式，写完文章，一个快捷键就 Copy 好了 Markdown， 直接粘贴到微信后台。这一流程就变成了，  <code>Org -&gt; Markdown -&gt; Markdown Here</code> 。 好吧， 我作弊了。
@@ -645,8 +645,8 @@ Org 有 <code>O-&gt;M here</code> &#x2014; 这是什么鬼。哈哈，Emacs 可�
 </div>
 </div>
 
-<div id="outline-container-org58d60aa" class="outline-2">
-<h2 id="org58d60aa"><span class="section-number-2">3</span> Org Mode 文学编程</h2>
+<div id="outline-container-orgd77529e" class="outline-2">
+<h2 id="orgd77529e"><span class="section-number-2">3</span> Org Mode 文学编程</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 作为一个程序员，这个真是太好用了
