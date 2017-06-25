@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>深入理解 Macro - org-page</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="isaac" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">org-page</a></h1>
+        <p>static site generator</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/wiki/">Wiki</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/kelvinh/org-page">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="gfzeng.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>深入理解 Macro</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgbf83b80">1. 前言</a></li>
+<li><a href="#orgd7a15ca">2. Read 阶段</a>
+<ul>
+<li><a href="#org3ab8a3c">2.1. Literal</a>
+<ul>
+<li><a href="#org37db832">2.1.1. Number</a></li>
+<li><a href="#orgb55e194">2.1.2. Symbol</a></li>
+<li><a href="#orgbd7b824">2.1.3. String</a></li>
+<li><a href="#orgf593f3b">2.1.4. Keyword</a></li>
+<li><a href="#org4df976c">2.1.5. And &#x2026;</a></li>
+</ul>
+</li>
+<li><a href="#orga602f1b">2.2. 实例</a></li>
+</ul>
+</li>
+<li><a href="#org2a36366">3. Compile 阶段</a></li>
+<li><a href="#org796fc41">4. Eval 阶段</a></li>
+<li><a href="#org9bb8d70">5. Talk is Cheap，Let's Coding</a>
+<ul>
+<li><a href="#org43e7553">5.1. 先忘掉 syntax-quote「`」，unquote「~」unquote-splicing「~@」</a></li>
+<li><a href="#orgd20b12a">5.2. 写个 macro <code>1+</code> 把传入的参数 + 1</a>
+<ul>
+<li><a href="#org0718cde">5.2.1. case 1</a></li>
+<li><a href="#org2666bc8">5.2.2. case 2</a></li>
+<li><a href="#orgb210d16">5.2.3. case 3</a></li>
+</ul>
+</li>
+<li><a href="#org57cfe14">5.3. syntax-quote 是什么？</a></li>
+<li><a href="#org0083e36">5.4. unquote 是什么？</a></li>
+<li><a href="#org1526bf3">5.5. unquote-splicing 是什么？</a></li>
+<li><a href="#org7ba4b33">5.6. 错误案例</a></li>
+</ul>
+</li>
+<li><a href="#org47ae4d0">6. 结论</a></li>
+</ul>
+</div>
+</div>
+<p>
+Lisp 因为 Macro 而强大，用好 Macro 却是一件不简单的事情，我自认为对 Macro 有很深入的了解，但是每次写 Macro 都要调试好几遍，并不能像写函数那样准确。
+</p>
+
+<p>
+要理解 Lisp 的 Macro，首先需要了解 Lisp 的运行过程，从读入用户的输入到运行代码到底经过了哪些步骤 &#x2013; 有人说有 2 个步骤，有人说有 3 个步骤。这两个答案都是对的，关键看你想表达什么，实际上，我更喜欢 2 个步骤这个说法，但是在这里，我们为了说明 Macro 的机制，采用 3 个步骤的说法。 这 3 个步骤是：
+</p>
+
+<ul class="org-ul">
+<li>Read</li>
+<li>Compile</li>
+<li>Eval</li>
+</ul>
+
+<blockquote>
+<p>
+2 个步骤就是 compile 和 eval 合并成一个  
+</p>
+</blockquote>
+
+<div id="outline-container-orgbf83b80" class="outline-2">
+<h2 id="orgbf83b80"><span class="section-number-2">1</span> 前言</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+阅读这篇文章，你首先得有一些 Lisp 的基础，到底多基础，我也说不准，你不妨看下去，说不定就有收获了。:-)
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd7a15ca" class="outline-2">
+<h2 id="orgd7a15ca"><span class="section-number-2">2</span> Read 阶段</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+read 阶段就是读入用户的输入的字符串， 生成 Lisp 的代码，通常来说就是 List 结构 &#x2013; Lisp 的数据即代码，就是这么来的。
+</p>
+
+<p>
+那么 List 结构里面包含哪些类型了？这个对 Lisp 来说是可以定义的（Reader Macro），本文不打算介绍这部分内容。通常来说，每个 Lisp 的实现都内置了一些，我们称这个为字面量 Literal，拿 Clojure 来说吧：
+</p>
+</div>
+<div id="outline-container-org3ab8a3c" class="outline-3">
+<h3 id="org3ab8a3c"><span class="section-number-3">2.1</span> Literal</h3>
+<div class="outline-text-3" id="text-2-1">
+</div><div id="outline-container-org37db832" class="outline-4">
+<h4 id="org37db832"><span class="section-number-4">2.1.1</span> Number</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+对任何语言来说，Number 貌似都是字面量， 你输入 「3」 字符串，Java
+不经过任何运算认定它是数字 3 了。
+</p>
+</div>
+</div>
+<div id="outline-container-orgb55e194" class="outline-4">
+<h4 id="orgb55e194"><span class="section-number-4">2.1.2</span> Symbol</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<p>
+这个 Lisp 独有，因为它可以 <code>绑定</code> 数据，类似于其他高级语言的变量。但是并不是这么简单，其他语言的变量本身不是对象，Lisp 的 Symbol 本身是对象，换句话说，Symbol 作为一个对象，可以绑定到 Symbol 身上。值得说明的是，Clojure 的数据并不是绑定在 Symbol 身上的，本文为了简化问题，你暂且就这么认为。
+</p>
+
+<blockquote>
+<p>
+<code>绑定</code> 的作用，是通过 <code>Symbol</code> 找到数据，和其他语言变量的效果一样，找数据这一步发生在 <code>Eval</code> 阶段
+</p>
+</blockquote>
+</div>
+</div>
+
+<div id="outline-container-orgbd7b824" class="outline-4">
+<h4 id="orgbd7b824"><span class="section-number-4">2.1.3</span> String</h4>
+<div class="outline-text-4" id="text-2-1-3">
+<p>
+这个没什么好说的
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf593f3b" class="outline-4">
+<h4 id="orgf593f3b"><span class="section-number-4">2.1.4</span> Keyword</h4>
+<div class="outline-text-4" id="text-2-1-4">
+<p>
+这个仍然没什么好说的
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4df976c" class="outline-4">
+<h4 id="org4df976c"><span class="section-number-4">2.1.5</span> And &#x2026;</h4>
+<div class="outline-text-4" id="text-2-1-5">
+<blockquote>
+<p>
+对 Clojure 来说，还有 Vector，ArrayMap &#x2026;
+</p>
+</blockquote>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga602f1b" class="outline-3">
+<h3 id="orga602f1b"><span class="section-number-3">2.2</span> 实例</h3>
+<div class="outline-text-3" id="text-2-2">
+<ul class="org-ul">
+<li>输入字符串 「(1 2 3)」read 之后得到 3 个数字的 List 结构 (1 2 3)</li>
+<li>输入字符串 「("hello" hello 3)」同样得到 3 个元素，其中第一个是 String「"hello"」，第二个是 Symbol「hello」，String 和 Symbol 完全不是一个东西。</li>
+</ul>
+
+<blockquote>
+<p>
+上述两个例子，不要急着在 REPL 里试，会报错的，因为你输入到 REPL 之后，会依次经过 Read，Compile，Eval 3 个阶段。List <code>(1 2 3)</code> 被 eval 的时候，1 会被当做函数，要是我是 1，就会回你一个 「fuck away」。
+</p>
+
+<p>
+如何测试这两个例子， 如果经过这一番提醒，你还是找不到方法，那说明你基础还不够，So &#x2026; 接着往下看。
+</p>
+</blockquote>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2a36366" class="outline-2">
+<h2 id="org2a36366"><span class="section-number-2">3</span> Compile 阶段</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+这一步骤就是为 Macro 设定的， 让 Macro 展开代码：
+</p>
+<ol class="org-ol">
+<li>用户输入字符串 A</li>
+<li>Reader 读入 A 得带代码 B</li>
+<li>Macro 展开代码 B 得到代码 C</li>
+<li>用代码 C 替换代码 B 所在的节点，说节点因为我们刚刚说了，Lisp 的代码就是数据结构，代码 B 必定在某个节点上</li>
+<li>交给 Eval 运行， 看下一节</li>
+</ol>
+
+<p>
+接下来的问题是，Macro 究竟是如何展开一段代码的了？由于代码就是数据结构，Macro 可以用任何操作该数据结构的方式，得到一个新的数据结构（任何数据结构都行），展开这个动作就完成了。比如对于 list <code>(+ 2 3)</code> ，写一个 macro， 把第 1 个和第 2 个元素换个位置就得到 list <code>(2 + 3)</code> 。
+</p>
+
+<blockquote>
+<p>
+1.「展开」有扩大的意思，通过上面的例子，我们看到，与其说展开，不如说变换。但    是习惯就是习惯，你不服？
+</p>
+
+<ol class="org-ol">
+<li>Macro 通过操作代码得到新代码，这就是在运算了，所以你能说他不是 <code>Eval</code> 吗？</li>
+</ol>
+</blockquote>
+</div>
+</div>
+
+<div id="outline-container-org796fc41" class="outline-2">
+<h2 id="org796fc41"><span class="section-number-2">4</span> Eval 阶段</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+这个阶段就是找到 Symbol 绑定的数据，并进行运算：
+</p>
+
+<ul class="org-ul">
+<li>(+ 1 2) &#x2013; <code>+</code> 这个 Symbol 绑定了一个做加法的函数，找到这个函数并运用到 1 和 2 两个参数上</li>
+<li>(+ a 1) &#x2013; 这一次除了找 <code>+</code> 的绑定之外， 还要找到 <code>a</code> 的绑定，再进行运算</li>
+</ul>
+
+<p>
+到目前为止，3 个步骤都说完了， 但是终归有点感觉「You said nothing worth」。你说试试看，看我不赞扬你，因为我也是这么认为的。
+</p>
+
+<p>
+好吧言归正传，下面的例子才是重点，之所以把这 3 个步骤说在前面，是确保当你看后面例子懵的时候，回头看上面的解释。
+</p>
+
+<p>
+我们还是拿 Clojure 来举例。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9bb8d70" class="outline-2">
+<h2 id="org9bb8d70"><span class="section-number-2">5</span> Talk is Cheap，Let's Coding</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+我们已经知道 macro 是用来转换代码的，那么 macro 的本质是什么？为了方便讲解下面的例子，必需弄清楚 macro 到底是个什么东西？macro 实际上就是一个 Function，操作数据的 Function，它跟 Eval 阶段的 Function 不同的是，macro 接受的参数是 Read 得到的字面量，而不是 Eval 过后的。拿 <code>(sum a 1)</code> 来说，假设 <code>sum</code> 是个 macro，那么, sum 接受到的第一参数是 Symbol <code>a</code> ， 而不是 <code>a</code> 绑定的数据，再次声明，找绑定的这个过程要到 Eval 阶段才会发生。sum 接受到的第二个参数就是 Number <code>1</code> ， 因为 <code>1</code> 是字面量，Reader 读入进来就决定好了。
+</p>
+</div>
+
+<div id="outline-container-org43e7553" class="outline-3">
+<h3 id="org43e7553"><span class="section-number-3">5.1</span> 先忘掉 syntax-quote「`」，unquote「~」unquote-splicing「~@」</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+认清 Macro， 这是必须要做的。在我和 Macro 相识的过程中，读了几篇 Common Lisp 的文章，文章的作者总是一上来就炫技。syntax-quote，unquote，unquote-splicing 各用一遍，文章完结。而我确实也学到了点，模仿总是能写那么几个简单的 macro，不是吗？人类总是很善于模仿，不一定需要知晓其原理。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd20b12a" class="outline-3">
+<h3 id="orgd20b12a"><span class="section-number-3">5.2</span> 写个 macro <code>1+</code> 把传入的参数 + 1</h3>
+<div class="outline-text-3" id="text-5-2">
+<div class="org-src-container">
+<pre class="src src-clojure">(defmacro 1+ [x]
+  (list '+ x 1))
+
+;;; case 1
+(1+ 1)
+;; 展开
+(+ 1 1)
+;; eval
+2
+
+;;; case 2
+(1+ x)
+;; 展开
+(+ x 1)
+;; eval
+;; 报错，what hell of x
+
+;;; case 3
+(let [z 3]
+  (1+ z))
+;; 展开并替换 `(1+ x)`  所在位置
+(let [z 3]
+  (+ z 1))
+;; eval, 这回 x 有了 `let` 的绑定
+4
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org0718cde" class="outline-4">
+<h4 id="org0718cde"><span class="section-number-4">5.2.1</span> case 1</h4>
+<div class="outline-text-4" id="text-5-2-1">
+<p>
+不解释
+</p>
+</div>
+</div>
+<div id="outline-container-org2666bc8" class="outline-4">
+<h4 id="org2666bc8"><span class="section-number-4">5.2.2</span> case 2</h4>
+<div class="outline-text-4" id="text-5-2-2">
+<p>
+case 2 的重点说明，你的 macro 没有问题，是你的 macro 展开之后，eval 遇到不认识的 x 才报的错
+</p>
+</div>
+</div>
+<div id="outline-container-orgb210d16" class="outline-4">
+<h4 id="orgb210d16"><span class="section-number-4">5.2.3</span> case 3</h4>
+<div class="outline-text-4" id="text-5-2-3">
+<p>
+case 3 为什么用了 Symbol「z」？
+</p>
+<ol class="org-ol">
+<li>read <code>(1+ z)</code> 得到 list <code>(1+ z)</code></li>
+<li><code>1+</code> 是个 macro， 把 Symbol「z」 直接当成参数，绑定到 <code>1+</code> 的参数名 「x」上，这时 eval <code>(list '+ x 1)</code> 得到 <code>(+ z 1)</code> 。</li>
+<li>把 <code>(1+ z)</code> 替换成 <code>(+ z 1)</code></li>
+<li>&#x2026;</li>
+</ol>
+
+<p>
+再次重点强调，macro 就是一个 Function， 他的参数就是 read 过后的字面量，因为 Compile 在 eval 之前。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org57cfe14" class="outline-3">
+<h3 id="org57cfe14"><span class="section-number-3">5.3</span> syntax-quote 是什么？</h3>
+<div class="outline-text-3" id="text-5-3">
+<p>
+syntax-quote 跟 quote「'」 没有任何区别，这话对于 Clojure 来说不真：
+</p>
+<blockquote>
+<p>
+syntax-quote 会使得 Reader 找到 symbol 的全名，当然是在它读取一个 symbol 的时候，而其他的字面量，他影响不了。 假设在 user namespace 下读取 <code>`a</code> ，而且没有引入其他 namespace 的 <code>a</code> ，这时候 <code>`a</code> 读取后就是 「user/a」这个 Symbol。 
+</p>
+</blockquote>
+
+<p>
+这话对于所有 Lisp 来说，还是不真，因为 syntax-quote 会区别对待 unquote。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0083e36" class="outline-3">
+<h3 id="org0083e36"><span class="section-number-3">5.4</span> unquote 是什么？</h3>
+<div class="outline-text-3" id="text-5-4">
+<p>
+unquote 顾名思义就是让 syntax-quote 失效，抵消掉 syntax-quote:
+</p>
+<ul class="org-ul">
+<li><code>`~a</code> &#x2013; 「`」  和 「~」相抵消，read 之后就是 Symbol「a」 了</li>
+<li><p>
+syntax-quote 放到括号外面是什么效果，我们上面说了，syntax-quote 和 quote 基本没有区别：
+</p>
+<div class="org-src-container">
+<pre class="src src-clojure">;; `&lt;=&gt;` 代表 `等价于`
+'(1 x 3) &lt;=&gt; (list '1 'x '3)
+
+;; syntax-quote 和 quote 一样
+`(1 x 3) &lt;=&gt; (list `1 `x `3)
+;; 来个 unquote
+`(1 ~x ~3) &lt;=&gt; (list `1 x 3)
+;; 一个 unquote 只能抵消一个
+``(1 ~x ~3) &lt;=&gt; (list ``1 `x `3)
+
+;; 来个 unquote-splicing：抵消  syntax-quote 再抹平
+`(1 ~@(x 3)) &lt;=&gt; (list `1 x 3)
+</pre>
+</div></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org1526bf3" class="outline-3">
+<h3 id="org1526bf3"><span class="section-number-3">5.5</span> unquote-splicing 是什么？</h3>
+<div class="outline-text-3" id="text-5-5">
+<p>
+上面已经说完了
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7ba4b33" class="outline-3">
+<h3 id="org7ba4b33"><span class="section-number-3">5.6</span> 错误案例</h3>
+<div class="outline-text-3" id="text-5-6">
+<div class="org-src-container">
+<pre class="src src-clojure">(defmacro defapp [name {:as   config
+                        :keys [routes middlewares]}]
+  `(def ~name
+     (-&gt; (routes-&gt;handler ~routes)
+         (wrap-middlewares ~middlewares))))
+</pre>
+</div>
+
+<p>
+这个 macro 能否正常使用，既然说他是错误的，那当然还是可以的啊:-)。用法如下：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(defapp myapp {:routes      [fuck-there fuck-here]
+               :middlewares [can-you-fuck-away]})
+
+</pre>
+</div>
+
+<p>
+不能用的用法如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-clojure">(def config {:routes      [fuck-there fuck-here]
+             :middlewares [can-you-fuck-away]})
+
+(defapp myapp config)
+
+;; config 传递给 `defapp` 时候，仍然是个 Symbol「config」
+(:routes 'config) ;; =&gt; nil
+(:middlewares 'config) ;; =&gt; nil
+;; 所以无论你的 config 绑定的是什么数据
+;; 最终 macro 展开成：
+(defapp myapp
+  (-&gt; (routes-&gt;handler nil)
+      (wrap-middlewares nil)))
+
+;; 只能这么用
+(defapp myapp &lt;only-allow-literal-map&gt;)
+
+;; 正确的 macro 怎么实现
+(defmacro defapp [name config]
+  `(let [{:keys [routes# middlewares#] ~config}]
+     (defapp ~name
+       (-&gt; (routes-&gt;handler routes#)
+           (wrap-middlewares middlewares#)))))
+;; 现在
+(defapp myapp &lt;both ok in here use literal and defined symbol&gt;)
+
+
+;; 然而以上都不是正确的， 这种情况，我们根本不应该用 macro
+(defn create-app [{:keys [routes middlewares]}]
+  (-&gt; (routes-&gt;handler routes)
+      (wrap-middlewares middlewares)))
+
+(def myapp (create-app &lt;both ok in here use literal and defined symbol&gt;))
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org47ae4d0" class="outline-2">
+<h2 id="org47ae4d0"><span class="section-number-2">6</span> 结论</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+重点要记住，当你写 macro 的时候
+</p>
+<ol class="org-ol">
+<li>参照 「unquote 是什么？」这一节示例，syntax-quote 作用在 list 上的等价效果</li>
+<li>Macro 就是 Function， 他的参数是 read 阶段之后的字面量，并不是 eval 后的绑定的对象，Compile 阶段发生在 Eval 之前。</li>
+<li>macro 展开后，替换原有代码的节点</li>
+<li>重复阅读 1-3</li>
+</ol>
+
+<p>
+更重要的是，要勇敢使用 macro， 但是不要故意炫技而使用。
+</p>
+
+<p>
+更更重要的是，Lisp 因为 Macro 而强大，而这只是其一，还有一个更牛逼的因素，那就是 Read 和 Eval 之间没有明显界限，Read 过程中有 Eval，Eval 过程中也可以有 Read（这里 Compile 和 Eval 合并在一起了）。好吧， 说太多了，留着下回写。
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2017-06-25</span>
+        <span title="last modification date" class="post-info">2017-06-25</span>
+        <span title="tags" class="post-info"><a href="/tags/clojure/">Clojure</a>, <a href="/tags/lisp/">Lisp</a>, <a href="/tags/macro/">Macro</a></span>
+        <span title="author" class="post-info">isaac</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2017/06/25/深入理解-macro/";
+          var disqus_url = "http://gfzeng.github.io/blog/2017/06/25/深入理解-macro/";
+          var disqus_shortname = 'isaac-zeng';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script> -->
+      <script src="/media/js/main.js"></script>
+      <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?lang=clj&skin=desert"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:isaac &lt;at&gt; localhost">isaac</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
