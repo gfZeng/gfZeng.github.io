@@ -1,0 +1,227 @@
+#+TITLE: 深入理解 Macro
+#+DATE:  2017-06-25
+#+TAGS:  Clojure, Lisp, Macro
+
+Lisp 因为 Macro 而强大，用好 Macro 却是一件不简单的事情，我自认为对 Macro 有很深入的了解，但是每次写 Macro 都要调试好几遍，并不能像写函数那样准确。
+
+要理解 Lisp 的 Macro，首先需要了解 Lisp 的运行过程，从读入用户的输入到运行代码到底经过了哪些步骤 -- 有人说有 2 个步骤，有人说有 3 个步骤。这两个答案都是对的，关键看你想表达什么，实际上，我更喜欢 2 个步骤这个说法，但是在这里，我们为了说明 Macro 的机制，采用 3 个步骤的说法。 这 3 个步骤是：
+
+- Read
+- Compile
+- Eval
+
+#+begin_quote
+2 个步骤就是 compile 和 eval 合并成一个  
+#+end_quote
+
+* 前言
+  阅读这篇文章，你首先得有一些 Lisp 的基础，到底多基础，我也说不准，你不妨看下去，说不定就有收获了。:-)
+
+* Read 阶段
+  read 阶段就是读入用户的输入的字符串， 生成 Lisp 的代码，通常来说就是 List 结构 -- Lisp 的数据即代码，就是这么来的。
+
+  那么 List 结构里面包含哪些类型了？这个对 Lisp 来说是可以定义的（Reader Macro），本文不打算介绍这部分内容。通常来说，每个 Lisp 的实现都内置了一些，我们称这个为字面量 Literal，拿 Clojure 来说吧：
+** Literal
+*** Number
+    对任何语言来说，Number 貌似都是字面量， 你输入 「3」 字符串，Java
+    不经过任何运算认定它是数字 3 了。
+*** Symbol
+    这个 Lisp 独有，因为它可以 =绑定= 数据，类似于其他高级语言的变量。但是并不是这么简单，其他语言的变量本身不是对象，Lisp 的 Symbol 本身是对象，换句话说，Symbol 作为一个对象，可以绑定到 Symbol 身上。值得说明的是，Clojure 的数据并不是绑定在 Symbol 身上的，本文为了简化问题，你暂且就这么认为。
+
+    #+begin_quote
+    =绑定= 的作用，是通过 =Symbol= 找到数据，和其他语言变量的效果一样，找数据这一步发生在 =Eval= 阶段
+    #+end_quote
+
+*** String
+    这个没什么好说的
+
+*** Keyword
+    这个仍然没什么好说的
+
+*** And ...
+    #+begin_quote
+    对 Clojure 来说，还有 Vector，ArrayMap ...
+    #+end_quote
+
+** 实例
+   - 输入字符串 「(1 2 3)」read 之后得到 3 个数字的 List 结构 (1 2 3)
+   - 输入字符串 「("hello" hello 3)」同样得到 3 个元素，其中第一个是 String「"hello"」，第二个是 Symbol「hello」，String 和 Symbol 完全不是一个东西。
+  
+   #+begin_quote
+    上述两个例子，不要急着在 REPL 里试，会报错的，因为你输入到 REPL 之后，会依次经过 Read，Compile，Eval 3 个阶段。List =(1 2 3)= 被 eval 的时候，1 会被当做函数，要是我是 1，就会回你一个 「fuck away」。
+    
+    如何测试这两个例子， 如果经过这一番提醒，你还是找不到方法，那说明你基础还不够，So ... 接着往下看。
+   #+end_quote
+
+* Compile 阶段
+  这一步骤就是为 Macro 设定的， 让 Macro 展开代码：
+  1. 用户输入字符串 A
+  2. Reader 读入 A 得带代码 B
+  3. Macro 展开代码 B 得到代码 C
+  4. 用代码 C 替换代码 B 所在的节点，说节点因为我们刚刚说了，Lisp 的代码就是数据结构，代码 B 必定在某个节点上
+  5. 交给 Eval 运行， 看下一节 
+  
+  接下来的问题是，Macro 究竟是如何展开一段代码的了？由于代码就是数据结构，Macro 可以用任何操作该数据结构的方式，得到一个新的数据结构（任何数据结构都行），展开这个动作就完成了。比如对于 list =(+ 2 3)= ，写一个 macro， 把第 1 个和第 2 个元素换个位置就得到 list =(2 + 3)= 。
+
+  #+begin_quote
+  1.「展开」有扩大的意思，通过上面的例子，我们看到，与其说展开，不如说变换。但    是习惯就是习惯，你不服？
+
+  2. Macro 通过操作代码得到新代码，这就是在运算了，所以你能说他不是 =Eval= 吗？
+  #+end_quote
+
+* Eval 阶段
+  这个阶段就是找到 Symbol 绑定的数据，并进行运算：
+
+  - (+ 1 2) -- =+= 这个 Symbol 绑定了一个做加法的函数，找到这个函数并运用到 1 和 2 两个参数上
+  - (+ a 1) -- 这一次除了找 =+= 的绑定之外， 还要找到 =a= 的绑定，再进行运算
+
+  到目前为止，3 个步骤都说完了， 但是终归有点感觉「You said nothing worth」。
+  你说试试看，看我不赞扬你，因为我也是这么认为的。
+
+  好吧言归正传，下面的例子才是重点，之所以把这 3 个步骤说在前面，是确保当你看后面例子懵的时候，回头看上面的解释。
+
+  我们还是拿 Clojure 来举例。
+
+* Talk is Cheap，Let's Coding
+  我们已经知道 macro 是用来转换代码的，那么 macro 的本质是什么？为了方便讲解下面的例子，必需弄清楚 macro 到底是个什么东西？macro 实际上就是一个 Function，操作数据的 Function，它跟 Eval 阶段的 Function 不同的是，macro 接受的参数是 Read 得到的字面量，而不是 Eval 过后的。拿 =(sum a 1)= 来说，假设 =sum= 是个 macro，那么, sum 接受到的第一参数是 Symbol =a= ， 而不是 =a= 绑定的数据，再次声明，找绑定的这个过程要到 Eval 阶段才会发生。sum 接受到的第二个参数就是 Number =1= ， 因为 =1= 是字面量，Reader 读入进来就决定好了。
+
+** 先忘掉 syntax-quote「`」，unquote「~」unquote-splicing「~@」
+   认清 Macro， 这是必须要做的。在我和 Macro 相识的过程中，读了几篇 Common Lisp 的文章，文章的作者总是一上来就炫技。syntax-quote，unquote，unquote-splicing 各用一遍，文章完结。而我确实也学到了点，模仿总是能写那么几个简单的 macro，不是吗？人类总是很善于模仿，不一定需要知晓其原理。
+
+**  写个 macro =1+= 把传入的参数 + 1
+   #+begin_src clojure
+     (defmacro 1+ [x]
+       (list '+ x 1))
+
+     ;;; case 1
+     (1+ 1)
+     ;; 展开
+     (+ 1 1)
+     ;; eval
+     2
+
+     ;;; case 2
+     (1+ x)
+     ;; 展开
+     (+ x 1)
+     ;; eval
+     ;; 报错，what hell of x
+
+     ;;; case 3
+     (let [z 3]
+       (1+ z))
+     ;; 展开并替换 `(1+ x)`  所在位置
+     (let [z 3]
+       (+ z 1))
+     ;; eval, 这回 x 有了 `let` 的绑定
+     4
+
+   #+end_src
+
+*** case 1
+   不解释
+*** case 2
+   case 2 的重点说明，你的 macro 没有问题，是你的 macro 展开之后，eval 遇到不认识的 x 才报的错
+*** case 3
+   case 3 为什么用了 Symbol「z」？
+   1. read =(1+ z)= 得到 list =(1+ z)=
+   2. =1+= 是个 macro， 把 Symbol「z」 直接当成参数，绑定到 =1+= 的参数名 「x」上，这时 eval =(list '+ x 1)= 得到 =(+ z 1)= 。
+   3. 把 =(1+ z)= 替换成 =(+ z 1)=
+   4. ...
+
+   再次重点强调，macro 就是一个 Function， 他的参数就是 read 过后的字面量，因为 Compile 在 eval 之前。
+
+** syntax-quote 是什么？
+   syntax-quote 跟 quote「'」 没有任何区别，这话对于 Clojure 来说不真：
+   #+begin_quote
+   syntax-quote 会使得 Reader 找到 symbol 的全名，当然是在它读取一个 symbol 的时候，而其他的字面量，他影响不了。 假设在 user namespace 下读取 =`a= ，而且没有引入其他 namespace 的 =a= ，这时候 =`a= 读取后就是 「user/a」这个 Symbol。 
+   #+end_quote
+   
+   这话对于所有 Lisp 来说，还是不真，因为 syntax-quote 会区别对待 unquote。
+
+** unquote 是什么？
+   unquote 顾名思义就是让 syntax-quote 失效，抵消掉 syntax-quote:
+   - =`~a= -- 「`」  和 「~」相抵消，read 之后就是 Symbol「a」 了
+   - syntax-quote 放到括号外面是什么效果，我们上面说了，syntax-quote 和 quote 基本没有区别：
+     #+begin_src clojure
+       ;; `<=>` 代表 `等价于`
+       '(1 x 3) <=> (list '1 'x '3)
+
+       ;; syntax-quote 和 quote 一样
+       `(1 x 3) <=> (list `1 `x `3)
+       ;; 来个 unquote
+       `(1 ~x ~3) <=> (list `1 x 3)
+       ;; 一个 unquote 只能抵消一个
+       ``(1 ~x ~3) <=> (list ``1 `x `3)
+
+       ;; 来个 unquote-splicing：抵消  syntax-quote 再抹平
+       `(1 ~@(x 3)) <=> (list `1 x 3)
+     #+end_src
+       
+** unquote-splicing 是什么？
+   上面已经说完了
+
+** 错误案例
+   #+begin_src clojure
+     (defmacro defapp [name {:as   config
+                             :keys [routes middlewares]}]
+       `(def ~name
+          (-> (routes->handler ~routes)
+              (wrap-middlewares ~middlewares))))
+   #+end_src
+
+   这个 macro 能否正常使用，既然说他是错误的，那当然还是可以的啊:-)。用法如下：
+
+   #+begin_src clojure
+     (defapp myapp {:routes      [fuck-there fuck-here]
+                    :middlewares [can-you-fuck-away]})
+
+   #+end_src
+
+   不能用的用法如下：
+   #+begin_src clojure  
+     (def config {:routes      [fuck-there fuck-here]
+                  :middlewares [can-you-fuck-away]})
+
+     (defapp myapp config)
+
+     ;; config 传递给 `defapp` 时候，仍然是个 Symbol「config」
+     (:routes 'config) ;; => nil
+     (:middlewares 'config) ;; => nil
+     ;; 所以无论你的 config 绑定的是什么数据
+     ;; 最终 macro 展开成：
+     (defapp myapp
+       (-> (routes->handler nil)
+           (wrap-middlewares nil)))
+
+     ;; 只能这么用
+     (defapp myapp <only-allow-literal-map>)
+
+     ;; 正确的 macro 怎么实现
+     (defmacro defapp [name config]
+       `(let [{:keys [routes# middlewares#] ~config}]
+          (defapp ~name
+            (-> (routes->handler routes#)
+                (wrap-middlewares middlewares#)))))
+     ;; 现在
+     (defapp myapp <both ok in here use literal and defined symbol>)
+
+
+     ;; 然而以上都不是正确的， 这种情况，我们根本不应该用 macro
+     (defn create-app [{:keys [routes middlewares]}]
+       (-> (routes->handler routes)
+           (wrap-middlewares middlewares)))
+
+     (def myapp (create-app <both ok in here use literal and defined symbol>))
+   #+end_src
+
+* 结论
+  重点要记住，当你写 macro 的时候
+  1. 参照 「unquote 是什么？」这一节示例，syntax-quote 作用在 list 上的等价效果
+  2. Macro 就是 Function， 他的参数是 read 阶段之后的字面量，并不是 eval 后的绑定的对象，Compile 阶段发生在 Eval 之前。
+  3. macro 展开后，替换原有代码的节点
+  4. 重复阅读 1-3
+
+  更重要的是，要勇敢使用 macro， 但是不要故意炫技而使用。
+
+  更更重要的是，Lisp 因为 Macro 而强大，而这只是其一，还有一个更牛逼的因素，那就是 Read 和 Eval 之间没有明显界限，Read 过程中有 Eval，Eval 过程中也可以有 Read（这里 Compile 和 Eval 合并在一起了）。好吧， 说太多了，留着下回写。
