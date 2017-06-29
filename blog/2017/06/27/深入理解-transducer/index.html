@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>深入理解 Transducer - 没事瞎思考</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="isaac" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">没事瞎思考</a></h1>
+        <p>没事瞎思考</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/wiki/">Wiki</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/gfZeng">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="gfzeng.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>深入理解 Transducer</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org55332db">1. Trans(form)(re)ducer 干什么用的</a></li>
+<li><a href="#org3b72a4f">2. transduce 怎么实现的</a></li>
+<li><a href="#org0c5da46">3. 列表的元素都加 1， 并过滤出偶数</a></li>
+<li><a href="#orga9348b0">4. tranducer 实现，一定需要实现 3 个签名吗？</a></li>
+</ul>
+</div>
+</div>
+<blockquote>
+<p>
+如果你来学「高级概念」-&#x2014; <code>组合子</code> <code>高阶函数</code> 等， 那么你走错地方了，本文并不打算引入任何高深概念，我喜欢简单直观的理解。
+</p>
+
+<p>
+多数时候，如果你要别人给你讲函数式编程，或者 Clojure 的 transducer，或者 …… ， 最终我们都记住了一大堆概念术语，下次别人问你的时候，你也知道怎么做了。然后我们发现，大家都懂了。
+</p>
+</blockquote>
+
+<p>
+Clojure 1.7 引入了 transducer，我在 1.8 的时候， 才开始大量使用，虽然一开始看了 Rich Hickey 的介绍文章，但仍然没有 Get 到要点。像当初使用 Macro 一样，凭借人类超强的模仿能力，我竟然也能使用，至于为什么使用，因为 Rich 说可以提高性能。
+</p>
+
+<p>
+因为经常使用，慢慢的熟了，理解加深了。但是我发现还是很难向别人解释清楚，尽管我自己写起来很顺畅。最终我找到一个还不错的方式，在此记录下来，希望对你有帮助。
+</p>
+
+<div id="outline-container-org55332db" class="outline-2">
+<h2 id="org55332db"><span class="section-number-2">1</span> Trans(form)(re)ducer 干什么用的</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+动词 <code>Transduce</code> 可以看做两个词的组合 -&#x2014; <code>transform</code>, <code>reduce</code> ，是 Clojure 的一个核心 Function，而名词 <code>Transducer</code> 可以理解为转换器， <code>transduce</code> 把 <code>transducer</code> 作为参数，把他的转换功能应用到数据流 <code>Stream</code> 上，这有点类似于 <code>reduce</code> ， <code>reduce</code> 的第一个参数是一个 reducing funciton， 比如 <code>conj</code> 。
+</p>
+
+<p>
+那这个 tranducer 到底是个什么东西了，根据官网的定义，tranducer 是一个高阶函数，它接受一个 reducing， 返回一个新的 reducing，新的 reducing 可以应用到另外的 transducer 上，这样又得到一个新的 reducing ……。这就是 transducer 可以组合的原因了。
+</p>
+
+<p>
+tranducer 接受 reduceing <code>A</code> 返回 reducing <code>B</code> ， <code>B</code> 具有什么功能了， 这当然看你的实现，你可以实现任何你想要的功能。通常来说无非就是： 
+</p>
+
+<ul class="org-ul">
+<li>转换数据, 比如 <code>(map inc)</code></li>
+<li>直接返回 result，或者传递数据给下一个 reducing <code>A</code> ， 比如 <code>(filter even?)</code></li>
+<li>兼具上面两个功能</li>
+</ul>
+
+<p>
+看完这个描述，是不是发现，这其实跟 Web 开发的中间件没有区别。
+</p>
+
+<blockquote>
+<ul class="org-ul">
+<li>这里用到「下一个 reducing A」，对于数据传递来说， <code>A</code> 处在 <code>B</code> 的下游，因为 <code>A</code> 使用与否，取决于 <code>B</code></li>
+
+<li>通常把 transducer 命名为 <code>xform</code></li>
+</ul>
+</blockquote>
+</div>
+</div>
+
+<div id="outline-container-org3b72a4f" class="outline-2">
+<h2 id="org3b72a4f"><span class="section-number-2">2</span> transduce 怎么实现的</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+我们直接看定义，直接从源码扣出，并去掉文档，重命名了部分内部变量，并加以注释
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">
+(defn transduce
+  ([xform rf coll] (transduce xform rf (rf) coll))
+  ([xform rf init coll]
+   (let [;; get finalized reducing function
+         rf  (xform rf)
+         ;; then apply `rf` &amp; `coll` to reduce
+         ret (if (instance? clojure.lang.IReduceInit coll)
+               (.reduce ^clojure.lang.IReduceInit coll rf init)
+               (clojure.core.protocols/coll-reduce coll rf init))]
+     ;; finalize result `ret`
+     (rf ret))))
+
+</pre>
+</div>
+
+<p>
+从源码可以看出，transducer <code>xform</code> 需要结合一个 reducing function 使用，最终使用的方式就是通过 reduce。
+</p>
+
+<p>
+到此，介绍完毕。 像常规一样， 不来个例子， 说了等于白说，为了保证本文的价值，我们接着往下看。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0c5da46" class="outline-2">
+<h2 id="org0c5da46"><span class="section-number-2">3</span> 列表的元素都加 1， 并过滤出偶数</h2>
+<div class="outline-text-2" id="text-3">
+<div class="org-src-container">
+<pre class="src src-clojure">
+;; make a transducer, clojure name this `xform`
+(def xform (comp (map inc) (filter even?)))
+
+;; apply reducing function `conj` to `xform` product a reducing function
+;; actually transduce function is just a reducing function
+(def rf (xform conj))
+
+;; use reducing function
+(reduce rf [] (range 10))
+;;=&gt; [2 4 6 8 10]
+
+</pre>
+</div>
+
+<p>
+上面的例子很简单，下面我们来图解它:
+</p>
+
+
+<div class="figure">
+<p><img src="http://oczr2280k.bkt.clouddn.com/transducer.png" alt="transducer.png" />
+</p>
+</div>
+
+<ul class="org-ul">
+<li>第一列，状态 Box 初始为空 <code>[]</code> , 输入 0， 经过 inc 之后变为 1，filter 的时候， <code>even?</code> 判断失败，直接返回原 Box <code>[]</code></li>
+<li>第二列，拿到 filter 返回的 Box 和一个新的输入 1，inc 之后为 2，filter 的时候， <code>even?</code> 判断成功，往下传递给 conj， <code>(conj [] 2)</code> 返回 <code>[2]</code></li>
+<li>第三列，拿到 conj 返回的结果，和新的输入 ……</li>
+<li>&#x2026;&#x2026;</li>
+</ul>
+
+<p>
+有了上面这个图示，回头看代码，就容易多了。为了简化问题，我们实现简化版的 transducer， 分别是 <code>map-inc</code> ， <code>filter-even?</code> ，随便提一句，map 并不是一个 transducer， <code>(map inc)</code> 的返回值才是。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">
+
+(defn map-inc
+  "- rf: the next reducing function"
+  [rf]
+  ;; return new reducing function
+  (fn [result input]
+    ;; inc input and then apply to next reducing function
+    (rf result (inc input))))
+
+(defn filter-even? [rf]
+  (fn [result input]
+    (if (even? input)
+      ;; transfer to next reducing function if `even?` predicate succeed
+      (rf result input)
+
+      ;; return immediately if predicate failed
+      result)))
+
+(def rf (-&gt; conj filter-even? map-inc))  ;; we got the same rf again
+
+
+</pre>
+</div>
+
+<p>
+如果你那上面简化版的实现对照 clojure 的源码， 比如 <code>(map inc)</code> 返回值的实现， 发现，源码要复杂的多，因为我只实现了核心逻辑，下面我来实现一个完整功能的 transducer， 并加以注解：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">
+(defn map-inc [rf]
+  (fn
+    ;; reducing function need an init state `result`, 
+    ;; this signature for init
+    ;; this case, simply call next reducing function `rf`
+    ([] (rf))
+
+    ;; when tranduce stream finished, this signature for `finalize`
+    ;; this case, simply call next reducing function `rf`
+    ([result] (rf result))
+
+    ;; this for receive from upstream reducing function
+    ;; act as reducing function role
+    ([result input]
+     (rf result (inc input)))))
+
+</pre>
+</div>
+
+<p>
+从上面可以看出，一个能用于 transduce 的 reducing  function，并不像传统的 reducing function 那么单纯， 它有 3 个签名，分别 0，1，2 个参数，其作用分别为：
+</p>
+<ul class="org-ul">
+<li>0：初始化,  <code>(transduce xform rf xs) -&gt; (transduce xform rf (rf) xs)</code></li>
+<li>1：处理最终结果, 看 transduce 的源码， 可以看到 <code>(rf ret)</code></li>
+<li>2：充当 reducing 角色，能否调用，取决于上游 reducing，是否往下传递取决于它</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orga9348b0" class="outline-2">
+<h2 id="orga9348b0"><span class="section-number-2">4</span> tranducer 实现，一定需要实现 3 个签名吗？</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+这个问题的答案是否定的，transducer 的重点在于他的可组合型，可重用性。他的实现不同于的 sequence function，不依赖具体的数据结构。对于任何数据流，或者状态的连续变化，只需要提供一个 reducing 适配器就行。 
+</p>
+
+<p>
+大名鼎鼎 <code>core.async</code> 就是这么重用 transducer 的， <code>core.async</code>  的 reducing adapter 就是 <code>(add! buf item)</code> , 而 <code>add!</code> 并没有实现 0 个参数情况， 这就是为什么你在创建 <code>chan</code> 的时候，如果使用了 <code>xform</code> 一定需要提供 buf。 因此，对于应用到 <code>core.async</code> 上面的 <code>xform</code> ， 你是不需要提供 0 个参数方法也可以用的，但是为了保证良好的重用性， 提供才是最佳实践。
+</p>
+
+<blockquote>
+<p>
+transducer 和并发，并行什么关系？
+</p>
+
+<p>
+答：没有关系
+</p>
+</blockquote>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2017-06-27</span>
+        <span title="last modification date" class="post-info">2017-06-29</span>
+        <span title="tags" class="post-info"><a href="/tags/clojure/">Clojure</a>, <a href="/tags/transducer/">Transducer</a></span>
+        <span title="author" class="post-info">isaac</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2017/06/27/深入理解-transducer/";
+          var disqus_url = "http://gfzeng.github.io/blog/2017/06/27/深入理解-transducer/";
+          var disqus_shortname = 'isaac-zeng';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script> -->
+      <script src="/media/js/main.js"></script>
+      <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?lang=clj&skin=desert"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:isaac &lt;at&gt; localhost">isaac</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

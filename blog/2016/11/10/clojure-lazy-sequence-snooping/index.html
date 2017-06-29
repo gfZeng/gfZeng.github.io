@@ -34,13 +34,13 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org5d37f1d">1. 定义无穷序列</a>
+<li><a href="#orga57cd08">1. 定义无穷序列</a>
 <ul>
-<li><a href="#org5efda11">1.1. 无穷 Fibnoacci 序列</a></li>
-<li><a href="#org804665d">1.2. 无穷素数序列</a></li>
+<li><a href="#orga8fc89f">1.1. 无穷 Fibnoacci 序列</a></li>
+<li><a href="#org57375aa">1.2. 无穷素数序列</a></li>
 </ul>
 </li>
-<li><a href="#org1c926b6">2. 动态作用域陷阱</a></li>
+<li><a href="#org8d623e0">2. 动态作用域陷阱</a></li>
 </ul>
 </div>
 </div>
@@ -58,11 +58,11 @@ Lazy 的好处是你不会撑死
 先说明一下，本文所有的 Lazy 是指 Lazy Sequence
 </p>
 
-<div id="outline-container-org5d37f1d" class="outline-2">
-<h2 id="org5d37f1d"><span class="section-number-2">1</span> 定义无穷序列</h2>
+<div id="outline-container-orga57cd08" class="outline-2">
+<h2 id="orga57cd08"><span class="section-number-2">1</span> 定义无穷序列</h2>
 <div class="outline-text-2" id="text-1">
-</div><div id="outline-container-org5efda11" class="outline-3">
-<h3 id="org5efda11"><span class="section-number-3">1.1</span> 无穷 Fibnoacci 序列</h3>
+</div><div id="outline-container-orga8fc89f" class="outline-3">
+<h3 id="orga8fc89f"><span class="section-number-3">1.1</span> 无穷 Fibnoacci 序列</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 下面我们来定义一个无穷的 Fibonacci 数列，随便你取多少个，只要你的内存允许。下述定义采取了这个规则：第 <code>N</code> 项是 <code>N-1</code> 和 <code>N-2</code> 项的和。知道第 1，2 项 <code>[0 1]</code> 就知道所有项了。
@@ -74,8 +74,8 @@ Lazy 的好处是你不会撑死
 </div>
 </div>
 
-<div id="outline-container-org804665d" class="outline-3">
-<h3 id="org804665d"><span class="section-number-3">1.2</span> 无穷素数序列</h3>
+<div id="outline-container-org57375aa" class="outline-3">
+<h3 id="org57375aa"><span class="section-number-3">1.2</span> 无穷素数序列</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 换个规则，我们采取同样的方式定义素数，素数有这么一个规则: 假设我们找到了前 <code>N</code> 个素数，那么第 <code>N+1</code> 个素数的寻找方法是（假设第 <code>N</code> 个素数是 x），设定 <code>x+1</code> ，如果 <code>x+1</code> 不能整除 <code>N</code> 个素数当中的任何一个， <code>x+1</code> 就是第 <code>N+1</code> 个素数，如果能整除，那么设定 <code>x+2</code> 继续继续判断， 直到找到为止。最后，我不提供证明，其实我不会。
@@ -107,8 +107,8 @@ Lazy 的好处就是，如果没有 Lazy， 上诉第 1 步 <code>所有自然�
 </div>
 </div>
 
-<div id="outline-container-org1c926b6" class="outline-2">
-<h2 id="org1c926b6"><span class="section-number-2">2</span> 动态作用域陷阱</h2>
+<div id="outline-container-org8d623e0" class="outline-2">
+<h2 id="org8d623e0"><span class="section-number-2">2</span> 动态作用域陷阱</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 说了这么多 Lazy 的好处，如果你们想用它，我觉得有必要提一下他的陷阱。我们通过上面的例子，可以看出，使用 Lazy 的前提条件你的知道持续生成的规则，这就相当于某个生产机器。如果机器内部的某个零件被更换了，那么你下次生产出来的产品有可能就不合格了。当然，这对于函数式语言来说，这生产机器就是个黑盒子，一旦造好，就不可篡改，这可以减少很多 Bug，但是仍然免不了需要引用某个外部变量，这个时候，正确性就不保证了，我们来看下面这个例子：
