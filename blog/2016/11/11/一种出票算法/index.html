@@ -34,15 +34,15 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org26eb2b7">1. 几个小结论</a></li>
-<li><a href="#org40fa1e3">2. 模拟卖票</a>
+<li><a href="#org799ce8d">1. 几个小结论</a></li>
+<li><a href="#orgd89b51d">2. 模拟卖票</a>
 <ul>
-<li><a href="#orgaa432dc">2.1. 出票规则</a></li>
-<li><a href="#orgd79e991">2.2. 判断座位在某站点区间是否可用</a></li>
+<li><a href="#org5004012">2.1. 出票规则</a></li>
+<li><a href="#orgeb1b783">2.2. 判断座位在某站点区间是否可用</a></li>
 </ul>
 </li>
-<li><a href="#org73e5a28">3. 出票算法</a></li>
-<li><a href="#org39a911e">4. 总结</a></li>
+<li><a href="#org5626164">3. 出票算法</a></li>
+<li><a href="#orgc28903f">4. 总结</a></li>
 </ul>
 </div>
 </div>
@@ -66,8 +66,8 @@
 上述例子实际是基于一个规则，就是不能要求乘客中途换座位，假如可以的话，我明显可以让乘客 AB 和 CD 的时候坐 6 号座位，BC 坐其他座位了，那么 6 号座位全程是满的，这对于列车来说倒是再好不过了。
 </p>
 
-<div id="outline-container-org26eb2b7" class="outline-2">
-<h2 id="org26eb2b7"><span class="section-number-2">1</span> 几个小结论</h2>
+<div id="outline-container-org799ce8d" class="outline-2">
+<h2 id="org799ce8d"><span class="section-number-2">1</span> 几个小结论</h2>
 <div class="outline-text-2" id="text-1">
 <ol class="org-ol">
 <li>票的最小单位是 1 站 × 1 座位</li>
@@ -78,8 +78,8 @@
 </div>
 </div>
 
-<div id="outline-container-org40fa1e3" class="outline-2">
-<h2 id="org40fa1e3"><span class="section-number-2">2</span> 模拟卖票</h2>
+<div id="outline-container-orgd89b51d" class="outline-2">
+<h2 id="orgd89b51d"><span class="section-number-2">2</span> 模拟卖票</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 <a href="http://oczr2280k.bkt.clouddn.com/12306-sell-ticket.png">12306 sell ticket</a>
@@ -87,8 +87,8 @@
 </p>
 </div>
 
-<div id="outline-container-orgaa432dc" class="outline-3">
-<h3 id="orgaa432dc"><span class="section-number-3">2.1</span> 出票规则</h3>
+<div id="outline-container-org5004012" class="outline-3">
+<h3 id="org5004012"><span class="section-number-3">2.1</span> 出票规则</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 基于上述例子，我们来设计一个合理的出票规则：确定票的站区间，从上至下找到一个不和其他票冲突的座位（也就是图形中的色块不重叠）。
@@ -109,8 +109,8 @@
 </div>
 </div>
 
-<div id="outline-container-orgd79e991" class="outline-3">
-<h3 id="orgd79e991"><span class="section-number-3">2.2</span> 判断座位在某站点区间是否可用</h3>
+<div id="outline-container-orgeb1b783" class="outline-3">
+<h3 id="orgeb1b783"><span class="section-number-3">2.2</span> 判断座位在某站点区间是否可用</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 拿丙来说，丙买了 de 2 个站点的票，根据我们内存图模型，他买了一张这样的票
@@ -139,8 +139,8 @@ t-site &amp; t-seat = t-site
 </div>
 </div>
 
-<div id="outline-container-org73e5a28" class="outline-2">
-<h2 id="org73e5a28"><span class="section-number-2">3</span> 出票算法</h2>
+<div id="outline-container-org5626164" class="outline-2">
+<h2 id="org5626164"><span class="section-number-2">3</span> 出票算法</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 现在我们来确定一下出票步骤：
@@ -157,8 +157,8 @@ t-site &amp; t-seat = t-site
 </div>
 </div>
 
-<div id="outline-container-org39a911e" class="outline-2">
-<h2 id="org39a911e"><span class="section-number-2">4</span> 总结</h2>
+<div id="outline-container-orgc28903f" class="outline-2">
+<h2 id="orgc28903f"><span class="section-number-2">4</span> 总结</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 我相信，采用这种出票算法，对于<a href="http://www.csdn.net/article/2015-02-10/2823900"> 12306 尖峰日 PV 值 297 亿下可每秒出票 1032 张</a>, 不采用内存计算进行优化，直接采用 PostgreSQL 就可以搞定了，每辆列车一个 table 保存所有座位的 ticket value， 不过 😝 ， 当然只是指出票而已，车票系统还有很多其他问题需要考虑。不过貌似看这文章，12306 的票是预先分配好的，然后每 2 分钟更新一次。
