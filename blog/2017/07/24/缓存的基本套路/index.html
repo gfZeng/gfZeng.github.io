@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>缓存的基本套路 - 没事瞎思考</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="isaac" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">没事瞎思考</a></h1>
+        <p>没事瞎思考</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/wiki/">Wiki</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/gfZeng">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="gfzeng.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>缓存的基本套路</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgb9024a8">1. 缓存策略</a></li>
+<li><a href="#org471e8f4">2. 缓存失效策略</a></li>
+<li><a href="#org9d5b28e">3. 缓存更新策略</a>
+<ul>
+<li><a href="#orgd8e5155">3.1. 更新的时候清除缓存</a></li>
+<li><a href="#org702eaa8">3.2. 更新的时候更新缓存</a></li>
+<li><a href="#org71597f4">3.3. 那种更新策略好</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<p>
+缓存大家都会用的，然而在实践中，准确无误的用好缓存并不容易，大家容易忽略某些细节部分。本文特意根据自己的经验和同事的讨论，总结出来的几条基本原则（套路）供大家参考：
+</p>
+
+<div id="outline-container-orgb9024a8" class="outline-2">
+<h2 id="orgb9024a8"><span class="section-number-2">1</span> 缓存策略</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+建议大家选取小较小粒度的缓存，最好跟数据库的实体模型对应。拿一个论坛网站来说，用分页作为缓存的粒度是不合理的：
+</p>
+
+<ul class="org-ul">
+<li>有过多冗余，论坛帖子不但有「最新」还有「最热」</li>
+<li>缓存的命中率低，因为改变任何一个帖子，整页都失效了</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org471e8f4" class="outline-2">
+<h2 id="org471e8f4"><span class="section-number-2">2</span> 缓存失效策略</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+这个不细说，基本由大家的业务决定。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9d5b28e" class="outline-2">
+<h2 id="org9d5b28e"><span class="section-number-2">3</span> 缓存更新策略</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+基本两种思路
+</p>
+<ul class="org-ul">
+<li>更新数据的时候，清除缓存</li>
+<li>更新数据的时候，更新缓存</li>
+</ul>
+</div>
+
+<div id="outline-container-orgd8e5155" class="outline-3">
+<h3 id="orgd8e5155"><span class="section-number-3">3.1</span> 更新的时候清除缓存</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+这种情况下，读取的时候，载入缓存。这是我常用的方式，也是首选方式，因为它实现起来简单。然而还是一个小小的细节需要注意的，「先更新数据，再清除缓存」 还是 「先清除缓存，再更新记录」。对于这个问题，我几乎可以肯定的是你一定可以答对，因为作为问题提出来，总会触发我们的思考。然而写代码的时候，我们的潜意识可能导致我们犯错。
+</p>
+
+<p>
+「先清除缓存，再更新记录」在并发情况下，是有问题的，最简单的一类情况就是：
+</p>
+<blockquote>
+<p>
+假设 2 个线程，A 读数据，B 写数据，考虑下列执行顺序：
+</p>
+<ol class="org-ol">
+<li>B 清除缓存</li>
+<li>A 读取数据， 没有缓存，载入缓存</li>
+<li>B 更新数据</li>
+</ol>
+</blockquote>
+
+<p>
+上述这种情况会导致 B 新写入的数据没有更新到缓存中，因为 A 的载入早于 B 的更新。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org702eaa8" class="outline-3">
+<h3 id="org702eaa8"><span class="section-number-3">3.2</span> 更新的时候更新缓存</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+这种思路比起前面一种，复杂很多，需要考虑的情况也多了很多。要确保缓存的数据跟实际数据的一致性，同样的，也有两种方式：
+</p>
+<ul class="org-ul">
+<li>确保实际数据的更新和缓存更新的步调一致</li>
+<li>缓存根据实际数据的版本号更新</li>
+</ul>
+
+<p>
+第一种方式，可以采取锁机制，然而这种方案并不高效，而且也无法使用在分布式系统中。不过这种方式但是很适合读写分离的架构，关于读写分离加缓存，这里不打算详细讨论，篇幅太大。
+</p>
+
+<p>
+第二种方式通常在更新数据的时候，更新版本号，并获得这个版本号，带着版本号去试图更新缓存，而且，这种方式得确保缓存的更新和版本的大小比较是个原子操作，对于 Redis 来说，需要写 lua 脚本了。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org71597f4" class="outline-3">
+<h3 id="org71597f4"><span class="section-number-3">3.3</span> 那种更新策略好</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+这个没有答案，不过我喜欢第一种。
+</p>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2017-07-24</span>
+        <span title="last modification date" class="post-info">2017-07-24</span>
+        <span title="tags" class="post-info">N/A</span>
+        <span title="author" class="post-info">isaac</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2017/07/24/缓存的基本套路/";
+          var disqus_url = "http://gfzeng.github.io/blog/2017/07/24/缓存的基本套路/";
+          var disqus_shortname = 'isaac-zeng';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script> -->
+      <script src="/media/js/main.js"></script>
+      <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?lang=clj&skin=desert"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:isaac &lt;at&gt; C02SC2EWG8WN &lt;dot&gt; local">isaac</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

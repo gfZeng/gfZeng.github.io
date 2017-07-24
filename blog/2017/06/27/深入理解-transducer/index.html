@@ -34,10 +34,10 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org91362bb">1. Trans(form)(re)ducer 干什么用的</a></li>
-<li><a href="#org283a2a5">2. transduce 怎么实现的</a></li>
-<li><a href="#orga8215e9">3. 列表的元素都加 1， 并过滤出偶数</a></li>
-<li><a href="#orga69782f">4. tranducer 实现，一定需要实现 3 个签名吗？</a></li>
+<li><a href="#orgd9c81c7">1. Trans(form)(re)ducer 干什么用的</a></li>
+<li><a href="#org9fb576d">2. transduce 怎么实现的</a></li>
+<li><a href="#orga8fbfe8">3. 列表的元素都加 1， 并过滤出偶数</a></li>
+<li><a href="#org7f4b06a">4. tranducer 实现，一定需要实现 3 个签名吗？</a></li>
 </ul>
 </div>
 </div>
@@ -59,8 +59,8 @@ Clojure 1.7 引入了 transducer，我在 1.8 的时候， 才开始大量使用
 因为经常使用，慢慢的熟了，理解加深了。但是我发现还是很难向别人解释清楚，尽管我自己写起来很顺畅。最终我找到一个还不错的方式，在此记录下来，希望对你有帮助。
 </p>
 
-<div id="outline-container-org91362bb" class="outline-2">
-<h2 id="org91362bb"><span class="section-number-2">1</span> Trans(form)(re)ducer 干什么用的</h2>
+<div id="outline-container-orgd9c81c7" class="outline-2">
+<h2 id="orgd9c81c7"><span class="section-number-2">1</span> Trans(form)(re)ducer 干什么用的</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 动词 <code>Transduce</code> 可以看做两个词的组合 -&#x2014; <code>transform</code>, <code>reduce</code> ，是 Clojure 的一个核心 Function，而名词 <code>Transducer</code> 可以理解为转换器， <code>transduce</code> 把 <code>transducer</code> 作为参数，把他的转换功能应用到数据流 <code>Stream</code> 上，这有点类似于 <code>reduce</code> ， <code>reduce</code> 的第一个参数是一个 reducing funciton， 比如 <code>conj</code> 。
@@ -94,8 +94,8 @@ tranducer 接受 reduceing <code>A</code> 返回 reducing <code>B</code> ， <co
 </div>
 </div>
 
-<div id="outline-container-org283a2a5" class="outline-2">
-<h2 id="org283a2a5"><span class="section-number-2">2</span> transduce 怎么实现的</h2>
+<div id="outline-container-org9fb576d" class="outline-2">
+<h2 id="org9fb576d"><span class="section-number-2">2</span> transduce 怎么实现的</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 我们直接看定义，从源码扣出，并去掉文档，重命名了部分内部变量，并加以注释
@@ -128,8 +128,8 @@ tranducer 接受 reduceing <code>A</code> 返回 reducing <code>B</code> ， <co
 </div>
 </div>
 
-<div id="outline-container-orga8215e9" class="outline-2">
-<h2 id="orga8215e9"><span class="section-number-2">3</span> 列表的元素都加 1， 并过滤出偶数</h2>
+<div id="outline-container-orga8fbfe8" class="outline-2">
+<h2 id="orga8fbfe8"><span class="section-number-2">3</span> 列表的元素都加 1， 并过滤出偶数</h2>
 <div class="outline-text-2" id="text-3">
 <div class="org-src-container">
 <pre class="src src-clojure">
@@ -230,8 +230,8 @@ tranducer 接受 reduceing <code>A</code> 返回 reducing <code>B</code> ， <co
 </div>
 </div>
 
-<div id="outline-container-orga69782f" class="outline-2">
-<h2 id="orga69782f"><span class="section-number-2">4</span> tranducer 实现，一定需要实现 3 个签名吗？</h2>
+<div id="outline-container-org7f4b06a" class="outline-2">
+<h2 id="org7f4b06a"><span class="section-number-2">4</span> tranducer 实现，一定需要实现 3 个签名吗？</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 这个问题的答案是否定的，transducer 的重点在于他的可组合型，可重用性。他的实现不同于的 sequence function，不依赖具体的数据结构。对于任何数据流，或者状态的连续变化，只需要提供一个 reducing 适配器就行。 
