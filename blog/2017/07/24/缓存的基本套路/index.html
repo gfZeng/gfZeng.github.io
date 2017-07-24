@@ -34,27 +34,26 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgb9024a8">1. 缓存策略</a></li>
-<li><a href="#org471e8f4">2. 缓存失效策略</a></li>
-<li><a href="#org9d5b28e">3. 缓存更新策略</a>
+<li><a href="#org6a27394">1. 缓存策略</a></li>
+<li><a href="#org32ad284">2. 缓存更新策略</a>
 <ul>
-<li><a href="#orgd8e5155">3.1. 更新的时候清除缓存</a></li>
-<li><a href="#org702eaa8">3.2. 更新的时候更新缓存</a></li>
-<li><a href="#org71597f4">3.3. 那种更新策略好</a></li>
+<li><a href="#org5743237">2.1. 更新的时候清除缓存</a></li>
+<li><a href="#orgec6e69a">2.2. 更新的时候更新缓存</a></li>
+<li><a href="#org513e536">2.3. 哪种更新策略好？</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 <p>
-缓存大家都会用的，然而在实践中，准确无误的用好缓存并不容易，大家容易忽略某些细节部分。本文特意根据自己的经验和同事的讨论，总结出来的几条基本原则（套路）供大家参考：
+作为程序员，缓存都会碰到，然而在实践中，准确无误的用好缓存并不容易，大家容易忽略某些细节部分。本文特意根据自己的经验和同事的讨论，总结出来的几条基本原则（套路）供大家参考：
 </p>
 
-<div id="outline-container-orgb9024a8" class="outline-2">
-<h2 id="orgb9024a8"><span class="section-number-2">1</span> 缓存策略</h2>
+<div id="outline-container-org6a27394" class="outline-2">
+<h2 id="org6a27394"><span class="section-number-2">1</span> 缓存策略</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-建议大家选取小较小粒度的缓存，最好跟数据库的实体模型对应。拿一个论坛网站来说，用分页作为缓存的粒度是不合理的：
+建议大家选取较小粒度的缓存，最好跟数据库的实体模型对应。拿一个论坛网站来说，用分页作为缓存的粒度是不合理的：
 </p>
 
 <ul class="org-ul">
@@ -64,32 +63,23 @@
 </div>
 </div>
 
-<div id="outline-container-org471e8f4" class="outline-2">
-<h2 id="org471e8f4"><span class="section-number-2">2</span> 缓存失效策略</h2>
+<div id="outline-container-org32ad284" class="outline-2">
+<h2 id="org32ad284"><span class="section-number-2">2</span> 缓存更新策略</h2>
 <div class="outline-text-2" id="text-2">
-<p>
-这个不细说，基本由大家的业务决定。
-</p>
-</div>
-</div>
-
-<div id="outline-container-org9d5b28e" class="outline-2">
-<h2 id="org9d5b28e"><span class="section-number-2">3</span> 缓存更新策略</h2>
-<div class="outline-text-2" id="text-3">
 <p>
 基本两种思路
 </p>
 <ul class="org-ul">
-<li>更新数据的时候，清除缓存</li>
-<li>更新数据的时候，更新缓存</li>
+<li>更新数据的时候， <code>清除</code> 缓存，读取的时候，载入新的缓存</li>
+<li>更新数据的时候， <code>更新</code> 缓存</li>
 </ul>
 </div>
 
-<div id="outline-container-orgd8e5155" class="outline-3">
-<h3 id="orgd8e5155"><span class="section-number-3">3.1</span> 更新的时候清除缓存</h3>
-<div class="outline-text-3" id="text-3-1">
+<div id="outline-container-org5743237" class="outline-3">
+<h3 id="org5743237"><span class="section-number-3">2.1</span> 更新的时候清除缓存</h3>
+<div class="outline-text-3" id="text-2-1">
 <p>
-这种情况下，读取的时候，载入缓存。这是我常用的方式，也是首选方式，因为它实现起来简单。然而还是一个小小的细节需要注意的，「先更新数据，再清除缓存」 还是 「先清除缓存，再更新记录」。对于这个问题，我几乎可以肯定的是你一定可以答对，因为作为问题提出来，总会触发我们的思考。然而写代码的时候，我们的潜意识可能导致我们犯错。
+这是我常用的方式，也是首选方式，因为它实现起来简单。然而还是一个小小的细节需要注意的，「先更新数据，再清除缓存」 还是 「先清除缓存，再更新记录」。对于这个问题，我几乎可以肯定的是你一定可以答对，因为作为问题提出来，总会触发我们的思考。然而写代码的时候，我们的潜意识可能导致我们犯错。
 </p>
 
 <p>
@@ -107,14 +97,14 @@
 </blockquote>
 
 <p>
-上述这种情况会导致 B 新写入的数据没有更新到缓存中，因为 A 的载入早于 B 的更新。
+上述这种情况会导致 B 新写入的数据没有更新到缓存中，因为 A 的读取早于 B 的更新。
 </p>
 </div>
 </div>
 
-<div id="outline-container-org702eaa8" class="outline-3">
-<h3 id="org702eaa8"><span class="section-number-3">3.2</span> 更新的时候更新缓存</h3>
-<div class="outline-text-3" id="text-3-2">
+<div id="outline-container-orgec6e69a" class="outline-3">
+<h3 id="orgec6e69a"><span class="section-number-3">2.2</span> 更新的时候更新缓存</h3>
+<div class="outline-text-3" id="text-2-2">
 <p>
 这种思路比起前面一种，复杂很多，需要考虑的情况也多了很多。要确保缓存的数据跟实际数据的一致性，同样的，也有两种方式：
 </p>
@@ -124,18 +114,18 @@
 </ul>
 
 <p>
-第一种方式，可以采取锁机制，然而这种方案并不高效，而且也无法使用在分布式系统中。不过这种方式但是很适合读写分离的架构，关于读写分离加缓存，这里不打算详细讨论，篇幅太大。
+第一种方式，可以采取锁机制，然而这种方案并不高效，而且也无法使用在分布式系统中。不过这种方式很适合读写分离的架构，关于读写分离和缓存，这里不打算详细讨论，篇幅太大。
 </p>
 
 <p>
-第二种方式通常在更新数据的时候，更新版本号，并获得这个版本号，带着版本号去试图更新缓存，而且，这种方式得确保缓存的更新和版本的大小比较是个原子操作，对于 Redis 来说，需要写 lua 脚本了。
+第二种方式通常在更新数据的时候，更新版本号，并获得这个版本号，带着版本号去试图更新缓存，这种方式得确保缓存的更新和版本的大小比较是个原子操作，对于 Redis 来说，需要写 lua 脚本了。
 </p>
 </div>
 </div>
 
-<div id="outline-container-org71597f4" class="outline-3">
-<h3 id="org71597f4"><span class="section-number-3">3.3</span> 那种更新策略好</h3>
-<div class="outline-text-3" id="text-3-3">
+<div id="outline-container-org513e536" class="outline-3">
+<h3 id="org513e536"><span class="section-number-3">2.3</span> 哪种更新策略好？</h3>
+<div class="outline-text-3" id="text-2-3">
 <p>
 这个没有答案，不过我喜欢第一种。
 </p>
