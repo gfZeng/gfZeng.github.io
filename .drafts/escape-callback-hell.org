@@ -1,0 +1,20 @@
+#+TITLE: 脱离 Callback hell
+#+DATE: <2017-07-03 Mon>
+#+TAGS: ClojureScript, Async
+
+
+#+begin_quote
+I'm your god, let I take you out of hell
+                                      ———— Rich Hickey
+#+end_quote
+
+Ok, 实际上，上面是我胡说八道乱编的，Rich Hickey 当然没有这么说过，不过从他创造的 Clojure 和 core.async 来说， 他确实做到了。
+
+避免 Callback hell 的方式有很多种， 最常见的有 Event 机制，还有就是虚拟机层面支持协程。Javascript 用的是 Event 机制，Python 用的是协程，但是 JS 的 lib 多数提供的是 callback API，JS 当然还有 async 相关的 lib， 这个 lib 本质上讲，并没有解决 Callback hell，充其量，他只是实现了各种 Callback 模式的 reduce function。
+
+其实外貌也是很抽象的，除了上述说的 2 种回避 Callback hell 的方式之外，时间还有第 3 种，那就是 DSL，或者说语法糖（个人认为 DSL 和语法糖没有什么区别）。ES6 新的标准 async，await 关键词可以说是一种语法糖，然而他的抽象力不够。对于没有 Macro
+的语言， 要增加新功能的方式就是增加新语法、新关键字。 
+
+* core.async 的 DSL
+  
+  
